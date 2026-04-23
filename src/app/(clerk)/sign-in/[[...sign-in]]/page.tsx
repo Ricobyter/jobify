@@ -1,7 +1,10 @@
 import { SignIn } from "@clerk/nextjs"
-
-export const dynamic = "force-dynamic"
+import { Suspense } from "react"
 
 export default function SignInPage() {
-  return <SignIn />
+  return (
+    <Suspense>
+      <SignIn />
+    </Suspense>
+  )
 }
