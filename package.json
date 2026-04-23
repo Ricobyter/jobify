@@ -48,6 +48,7 @@
     "lucide-react": "^0.513.0",
     "next": "15.4.0-canary.67",
     "next-mdx-remote": "^5.0.0",
+    "next-nprogress-bar": "^2.4.7",
     "next-themes": "^0.4.6",
     "pg": "^8.16.0",
     "react": "19.1.0",

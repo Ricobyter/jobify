@@ -18,22 +18,34 @@ export const customFileRouter = {
       return { userId }
     })
     .onUploadComplete(async ({ metadata, file }) => {
+      console.log("[UT] onUploadComplete START", { userId: metadata.userId, fileKey: file.key, ufsUrl: file.ufsUrl })
       const { userId } = metadata
       const resumeFileKey = await getUserResumeFileKey(userId)
+      console.log("[UT] existing resumeFileKey:", resumeFileKey)
 
-      await upsertUserResume(userId, {
-        resumeFileUrl: file.ufsUrl,
-        resumeFileKey: file.key,
-      })
-
-      if (resumeFileKey != null) {
-        await uploadthing.deleteFiles(resumeFileKey)
+      try {
+        await upsertUserResume(userId, {
+          resumeFileUrl: file.ufsUrl,
+          resumeFileKey: file.key,
+        })
+        console.log("[UT] upsertUserResume done")
+      } catch (err) {
+        console.error("[UT] upsertUserResume FAILED:", err)
+        throw err
       }
 
-      await inngest
-        .send({ name: "app/resume.uploaded", user: { id: userId } })
-        .catch(err => console.error("Failed to send inngest event:", err))
+      if (resumeFileKey != null) {
+        await uploadthing.deleteFiles(resumeFileKey).catch(err =>
+          console.error("[UT] Failed to delete old resume file:", err)
+        )
+        console.log("[UT] deleteFiles done")
+      }
 
+      inngest
+        .send({ name: "app/resume.uploaded", user: { id: userId } })
+        .catch(err => console.error("[UT] Failed to send inngest event:", err))
+
+      console.log("[UT] onUploadComplete DONE — returning success")
       return { message: "Resume uploaded successfully" }
     }),
 } satisfies FileRouter

@@ -24,12 +24,14 @@ export function UploadDropzone({
         className
       )}
       onClientUploadComplete={res => {
+        console.log("[UT Client] onClientUploadComplete fired", res)
         res.forEach(({ serverData }) => {
           if (serverData?.message) toast.success(serverData.message)
         })
         onClientUploadComplete?.(res)
       }}
       onUploadError={(error: UploadThingError<Json>) => {
+        console.error("[UT Client] onUploadError fired", error)
         toast.error(error.message)
         onUploadError?.(error)
       }}

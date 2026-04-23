@@ -35,6 +35,11 @@ type Events = {
       id: string
     }
   }
+  "dev/sync.user": {
+    data: {
+      userId: string
+    }
+  }
   "app/email.daily-user-job-listings": {
     data: {
       aiPrompt?: string

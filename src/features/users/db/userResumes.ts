@@ -15,7 +15,11 @@ export async function upsertUserResume(
       set: data,
     })
 
-  revalidateUserResumeCache(userId)
+  try {
+    revalidateUserResumeCache(userId)
+  } catch (err) {
+    console.error("[upsertUserResume] revalidateTag failed:", err)
+  }
 }
 
 export async function updateUserResume(
