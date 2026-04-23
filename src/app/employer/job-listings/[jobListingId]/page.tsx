@@ -38,7 +38,6 @@ import { getUserResumeIdTag } from "@/features/users/db/cache/userResumes"
 import { getUserIdTag } from "@/features/users/db/cache/users"
 import { getCurrentOrganization } from "@/services/clerk/lib/getCurrentAuth"
 import { hasOrgUserPermission } from "@/services/clerk/lib/orgUserPermissions"
-import { Action } from "@mdxeditor/editor"
 import { and, eq } from "drizzle-orm"
 import {
   EditIcon,

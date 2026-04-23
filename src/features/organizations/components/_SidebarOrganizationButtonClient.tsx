@@ -18,8 +18,6 @@ import {
   ChevronsUpDown,
   CreditCardIcon,
   LogOutIcon,
-  SettingsIcon,
-  UserIcon,
   UserRoundCogIcon,
 } from "lucide-react"
 import Link from "next/link"

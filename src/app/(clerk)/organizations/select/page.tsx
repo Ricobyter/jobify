@@ -2,13 +2,14 @@
 
 import dynamic from "next/dynamic"
 import { useSearchParams } from "next/navigation"
+import { Suspense } from "react"
 
 const OrganizationList = dynamic(
   () => import("@clerk/nextjs").then(mod => mod.OrganizationList),
   { ssr: false }
 )
 
-export default function OrganizationSelectPage() {
+function OrganizationSelectContent() {
   const searchParams = useSearchParams()
   const redirectUrl = searchParams.get("redirect") ?? "/employer"
 
@@ -20,5 +21,13 @@ export default function OrganizationSelectPage() {
       afterSelectOrganizationUrl={redirectUrl}
       afterCreateOrganizationUrl={redirectUrl}
     />
+  )
+}
+
+export default function OrganizationSelectPage() {
+  return (
+    <Suspense>
+      <OrganizationSelectContent />
+    </Suspense>
   )
 }

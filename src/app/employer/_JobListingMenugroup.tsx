@@ -14,7 +14,6 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 import { JobListingStatus, JobListingTable } from "@/drizzle/schema"
-import { jobListingSchema } from "@/features/jobListings/actions/schemas"
 import { formatJobListingStatus } from "@/features/jobListings/lib/formatters"
 import { ChevronRightIcon } from "lucide-react"
 import Link from "next/link"
