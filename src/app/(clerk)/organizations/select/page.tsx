@@ -1,4 +1,5 @@
 import { OrganizationList } from "@clerk/nextjs"
+import { connection } from "next/server"
 import { Suspense } from "react"
 
 type Props = {
@@ -6,6 +7,8 @@ type Props = {
 }
 
 export default async function OrganizationSelectPage(props: Props) {
+  await connection()
+
   return (
     <Suspense>
       <SuspendedPage {...props} />
