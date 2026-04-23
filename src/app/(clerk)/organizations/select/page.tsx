@@ -1,24 +1,16 @@
-import { OrganizationList } from "@clerk/nextjs"
-import { connection } from "next/server"
-import { Suspense } from "react"
+"use client"
 
-type Props = {
-  searchParams: Promise<{ redirect?: string }>
-}
+import dynamic from "next/dynamic"
+import { useSearchParams } from "next/navigation"
 
-export default async function OrganizationSelectPage(props: Props) {
-  await connection()
+const OrganizationList = dynamic(
+  () => import("@clerk/nextjs").then(mod => mod.OrganizationList),
+  { ssr: false }
+)
 
-  return (
-    <Suspense>
-      <SuspendedPage {...props} />
-    </Suspense>
-  )
-}
-
-async function SuspendedPage({ searchParams }: Props) {
-  const { redirect } = await searchParams
-  const redirectUrl = redirect ?? "/employer"
+export default function OrganizationSelectPage() {
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get("redirect") ?? "/employer"
 
   return (
     <OrganizationList
