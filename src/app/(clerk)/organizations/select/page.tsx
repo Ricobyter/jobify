@@ -1,14 +1,19 @@
-import { connection } from "next/server"
+import { Suspense } from "react"
 import { OrganizationSelectClient } from "./_OrganizationSelectClient"
 
 type Props = {
   searchParams: Promise<{ redirect?: string }>
 }
 
-export default async function OrganizationSelectPage({ searchParams }: Props) {
-  await connection()
+async function OrganizationSelectContent({ searchParams }: Props) {
   const { redirect } = await searchParams
-  const redirectUrl = redirect ?? "/employer"
+  return <OrganizationSelectClient redirectUrl={redirect ?? "/employer"} />
+}
 
-  return <OrganizationSelectClient redirectUrl={redirectUrl} />
+export default function OrganizationSelectPage(props: Props) {
+  return (
+    <Suspense>
+      <OrganizationSelectContent {...props} />
+    </Suspense>
+  )
 }
