@@ -1,6 +1,5 @@
-import { JobListingApplicationTable, JobListingTable } from "@/drizzle/schema"
+import { JobListingApplicationTable } from "@/drizzle/schema"
 import {
-  Button,
   Container,
   Head,
   Heading,
@@ -10,13 +9,6 @@ import {
   Text,
 } from "@react-email/components"
 import tailwindConfig from "../data/tailwindConfig"
-import {
-  formatExperienceLevel,
-  formatJobListingLocation,
-  formatJobType,
-  formatLocationRequirement,
-  formatWage,
-} from "@/features/jobListings/lib/formatters"
 import { groupBy } from "@/lib/groupBy"
 import { cn } from "@/lib/utils"
 import { ReactNode } from "react"
