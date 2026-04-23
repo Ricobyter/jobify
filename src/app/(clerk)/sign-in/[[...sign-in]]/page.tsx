@@ -1,7 +1,10 @@
 import { SignIn } from "@clerk/nextjs"
+import { connection } from "next/server"
 import { Suspense } from "react"
 
-export default function SignInPage() {
+export default async function SignInPage() {
+  await connection()
+
   return (
     <Suspense>
       <SignIn />
