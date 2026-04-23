@@ -1,33 +1,14 @@
-"use client"
+import { connection } from "next/server"
+import { OrganizationSelectClient } from "./_OrganizationSelectClient"
 
-import dynamic from "next/dynamic"
-import { useSearchParams } from "next/navigation"
-import { Suspense } from "react"
-
-const OrganizationList = dynamic(
-  () => import("@clerk/nextjs").then(mod => mod.OrganizationList),
-  { ssr: false }
-)
-
-function OrganizationSelectContent() {
-  const searchParams = useSearchParams()
-  const redirectUrl = searchParams.get("redirect") ?? "/employer"
-
-  return (
-    <OrganizationList
-      hidePersonal
-      hideSlug
-      skipInvitationScreen
-      afterSelectOrganizationUrl={redirectUrl}
-      afterCreateOrganizationUrl={redirectUrl}
-    />
-  )
+type Props = {
+  searchParams: Promise<{ redirect?: string }>
 }
 
-export default function OrganizationSelectPage() {
-  return (
-    <Suspense>
-      <OrganizationSelectContent />
-    </Suspense>
-  )
+export default async function OrganizationSelectPage({ searchParams }: Props) {
+  await connection()
+  const { redirect } = await searchParams
+  const redirectUrl = redirect ?? "/employer"
+
+  return <OrganizationSelectClient redirectUrl={redirectUrl} />
 }
