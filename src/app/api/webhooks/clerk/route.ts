@@ -1,5 +1,7 @@
+import { env } from "@/data/env/server"
 import { inngest } from "@/services/inngest/client"
 import { NextRequest, NextResponse } from "next/server"
+import { Webhook } from "svix"
 
 type ClerkEventType =
   | "user.created"
@@ -29,6 +31,12 @@ export async function POST(req: NextRequest) {
   req.headers.forEach((value, key) => {
     headers[key] = value
   })
+
+  try {
+    new Webhook(env.CLERK_WEBHOOK_SECRET).verify(raw, headers)
+  } catch {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
+  }
 
   const payload = JSON.parse(raw)
   const eventType = payload.type as string
