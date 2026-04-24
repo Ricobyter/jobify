@@ -13,25 +13,26 @@ import {
 } from "@/components/ui/form"
 import { MarkdownEditor } from "@/components/markdown/MarkdownEditor"
 import { LoadingSwap } from "@/components/LoadingSwap"
-import { z } from "zod"
 import { toast } from "sonner"
 import { createJobListingApplication } from "../actions/actions"
 import { newJobListingApplicationSchema } from "../actions/schemas"
 import { Button } from "@/components/ui/button"
+
+type NewJobListingApplicationFormValues = {
+  coverLetter: string
+}
 
 export function NewJobListingApplicationForm({
   jobListingId,
 }: {
   jobListingId: string
 }) {
-  const form = useForm({
-    resolver: zodResolver(newJobListingApplicationSchema),
+  const form = useForm<NewJobListingApplicationFormValues>({
+    resolver: zodResolver(newJobListingApplicationSchema as never),
     defaultValues: { coverLetter: "" },
   })
 
-  async function onSubmit(
-    data: z.infer<typeof newJobListingApplicationSchema>
-  ) {
+  async function onSubmit(data: NewJobListingApplicationFormValues) {
     const results = await createJobListingApplication(jobListingId, data)
 
     if (results.error) {

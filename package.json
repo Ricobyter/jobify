@@ -12,6 +12,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "inngest": "node scripts/inngest-dev.mjs",
+    "inngest:cloud": "INNGEST_BASE_URL=$SERVER_URL node scripts/inngest-dev.mjs",
     "email": "email dev --dir src/services/resend/components --port 3001"
   },
   "dependencies": {
@@ -19,8 +20,8 @@
     "@clerk/nextjs": "^6.21.0",
     "@clerk/themes": "^2.2.49",
     "@google/generative-ai": "^0.24.1",
-    "@hookform/resolvers": "^5.0.1",
-    "@inngest/agent-kit": "^0.8.0",
+    "@hookform/resolvers": "^5.2.2",
+    "@inngest/agent-kit": "^0.13.2",
     "@mdxeditor/editor": "^3.35.0",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -44,7 +45,7 @@
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.44.2",
     "groq-sdk": "^1.1.2",
-    "inngest": "^3.38.0",
+    "inngest": "^3.54.0",
     "lucide-react": "^0.513.0",
     "next": "^15.5.15",
     "next-mdx-remote": "^6.0.0",
@@ -61,7 +62,10 @@
     "svix": "^1.66.0",
     "tailwind-merge": "^3.3.0",
     "uploadthing": "^7.7.2",
-    "zod": "^3.25.51"
+    "zod": "^4.3.6"
+  },
+  "overrides": {
+    "inngest": "^3.54.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
