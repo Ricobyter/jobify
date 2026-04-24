@@ -11,7 +11,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "inngest": "inngest-cli dev -u http://localhost:3000/api/inngest",
+    "inngest": "node scripts/inngest-dev.mjs",
     "email": "email dev --dir src/services/resend/components --port 3001"
   },
   "dependencies": {
