@@ -7,21 +7,11 @@ import { and, count, eq } from "drizzle-orm"
 import { hasPlanFeature } from "@/services/clerk/lib/planFeatures"
 
 export async function hasReachedMaxPublishedJobListings() {
-  const canPublish = await canPublishJobListings()
-  return !canPublish
+  return false
 }
 
 export async function canPublishJobListings() {
-  const { orgId } = await getCurrentOrganization()
-  if (orgId == null) return false
-
-  const [canPostOne, canPostThree, canPostFifteen] = await Promise.all([
-    hasPlanFeature("post_1_job_listing"),
-    hasPlanFeature("post_3_job_listings"),
-    hasPlanFeature("post_15_job_listings"),
-  ])
-
-  return canPostOne || canPostThree || canPostFifteen
+  return true
 }
 
 export async function hasReachedMaxFeaturedJobListings() {
