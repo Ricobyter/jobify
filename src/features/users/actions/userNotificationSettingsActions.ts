@@ -4,6 +4,7 @@ import { z } from "zod"
 import { userNotificationSettingsSchema } from "./schemas"
 import { getCurrentUser } from "@/services/clerk/lib/getCurrentAuth"
 import { updateUserNotificationSettings as updateUserNotificationSettingsDb } from "@/features/users/db/userNotificationSettings"
+import { ensureCurrentUserInDb } from "@/services/clerk/lib/syncAuthToDb"
 
 export async function updateUserNotificationSettings(
   unsafeData: z.infer<typeof userNotificationSettingsSchema>
@@ -15,6 +16,8 @@ export async function updateUserNotificationSettings(
       message: "You must be signed in to update notification settings",
     }
   }
+
+  await ensureCurrentUserInDb(userId)
 
   const { success, data } = userNotificationSettingsSchema.safeParse(unsafeData)
   if (!success) {

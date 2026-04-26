@@ -7,6 +7,10 @@ import { SignOutButton } from "@/services/clerk/components/AuthButtons"
 import { SidebarMenuButton } from "@/components/ui/sidebar"
 import { LogOutIcon } from "lucide-react"
 import { SidebarOrganizationButtonClient } from "./_SidebarOrganizationButtonClient"
+import {
+  ensureCurrentOrganizationInDb,
+  ensureCurrentUserInDb,
+} from "@/services/clerk/lib/syncAuthToDb"
 
 export function SidebarOrganizationButton() {
   return (
@@ -17,10 +21,34 @@ export function SidebarOrganizationButton() {
 }
 
 async function SidebarOrganizationSuspense() {
-  const [{ user }, { organization }] = await Promise.all([
+  const [{ userId, user }, { orgId, organization }] = await Promise.all([
     getCurrentUser({ allData: true }),
     getCurrentOrganization({ allData: true }),
   ])
+
+  if (userId == null || orgId == null) return null
+
+  if (user == null || organization == null) {
+    await Promise.all([
+      ensureCurrentUserInDb(userId),
+      ensureCurrentOrganizationInDb(orgId),
+    ])
+
+    const [{ user: syncedUser }, { organization: syncedOrganization }] =
+      await Promise.all([
+        getCurrentUser({ allData: true }),
+        getCurrentOrganization({ allData: true }),
+      ])
+
+    if (syncedUser != null && syncedOrganization != null) {
+      return (
+        <SidebarOrganizationButtonClient
+          user={syncedUser}
+          organization={syncedOrganization}
+        />
+      )
+    }
+  }
 
   if (user == null || organization == null) {
     return (

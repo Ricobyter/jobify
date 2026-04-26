@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar"
 import { SignOutButton } from "@/services/clerk/components/AuthButtons"
-import { useClerk } from "@clerk/nextjs"
 import {
   ArrowLeftRightIcon,
   Building2Icon,
@@ -39,7 +38,6 @@ export function SidebarOrganizationButtonClient({
   organization: Organization
 }) {
   const { isMobile, setOpenMobile } = useSidebar()
-  const { openOrganizationProfile } = useClerk()
 
   return (
     <DropdownMenu>
@@ -62,13 +60,10 @@ export function SidebarOrganizationButtonClient({
           <OrganizationInfo user={user} organization={organization} />
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => {
-            openOrganizationProfile()
-            setOpenMobile(false)
-          }}
-        >
-          <Building2Icon className="mr-1" /> Manage Organization
+        <DropdownMenuItem asChild onClick={() => setOpenMobile(false)}>
+          <Link href="/organization-profile">
+            <Building2Icon className="mr-1" /> Manage Organization
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/employer/user-settings">

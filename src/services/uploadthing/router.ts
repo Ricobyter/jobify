@@ -7,6 +7,7 @@ import { db } from "@/drizzle/db"
 import { eq } from "drizzle-orm"
 import { UserResumeTable } from "@/drizzle/schema"
 import { uploadthing } from "./client"
+import { ensureCurrentUserInDb } from "../clerk/lib/syncAuthToDb"
 
 const f = createUploadthing()
 
@@ -15,6 +16,14 @@ export const customFileRouter = {
     .middleware(async () => {
       const { userId } = await getCurrentUser()
       if (userId == null) throw new UploadThingError("Unauthorized")
+
+      try {
+        await ensureCurrentUserInDb(userId)
+      } catch (err) {
+        console.error("[UT] Failed to sync current user into DB:", err)
+        throw new UploadThingError("Unable to prepare user profile for upload")
+      }
+
       return { userId }
     })
     .onUploadComplete(async ({ metadata, file }) => {

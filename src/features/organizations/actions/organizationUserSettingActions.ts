@@ -7,6 +7,7 @@ import {
   getCurrentUser,
 } from "@/services/clerk/lib/getCurrentAuth"
 import { updateOrganizationUserSettings as updateOrganizationUserSettingsDb } from "@/features/organizations/db/organizationUserSettings"
+import { ensureOrganizationUserSettingsInDb } from "@/services/clerk/lib/syncAuthToDb"
 
 export async function updateOrganizationUserSettings(
   unsafeData: z.infer<typeof organizationUserSettingsSchema>
@@ -19,6 +20,11 @@ export async function updateOrganizationUserSettings(
       message: "You must be signed in to update notification settings",
     }
   }
+
+  await ensureOrganizationUserSettingsInDb({
+    userId,
+    organizationId: orgId,
+  })
 
   const { success, data } = organizationUserSettingsSchema.safeParse(unsafeData)
   if (!success) {
