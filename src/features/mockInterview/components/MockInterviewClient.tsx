@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -83,6 +83,7 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
   const [questionCount, setQuestionCount] = useState(0)
   const [currentAnswer, setCurrentAnswer] = useState("")
+  const [interimTranscript, setInterimTranscript] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
@@ -91,10 +92,21 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const shouldKeepListeningRef = useRef(false)
+  const autoSubmitAfterListeningRef = useRef(false)
+
+  const [shouldAutoSubmit, setShouldAutoSubmit] = useState(false)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [chatHistory, isLoading])
+
+  // Auto-submit when user stops listening and has an answer
+  useEffect(() => {
+    if (shouldAutoSubmit && currentAnswer.trim() && !isLoading && mode === "voice") {
+      setShouldAutoSubmit(false)
+      void handleSendAnswer()
+    }
+  }, [shouldAutoSubmit, currentAnswer, isLoading, mode, handleSendAnswer])
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -123,8 +135,9 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
     if (mode !== "voice") {
       stopListening()
       stopSpeaking()
+      setInterimTranscript("")
     }
-  }, [mode])
+  }, [mode, stopListening])
 
   function stopSpeaking() {
     if (typeof window === "undefined") return
@@ -132,7 +145,7 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
     setIsSpeaking(false)
   }
 
-  function speakAssistant(text: string) {
+  const speakAssistant = useCallback((text: string) => {
     if (mode !== "voice" || typeof window === "undefined") return
 
     stopSpeaking()
@@ -144,13 +157,14 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
     utterance.onend = () => setIsSpeaking(false)
     utterance.onerror = () => setIsSpeaking(false)
     window.speechSynthesis.speak(utterance)
-  }
+  }, [mode])
 
-  function stopListening() {
+  const stopListening = useCallback(() => {
+    autoSubmitAfterListeningRef.current = true
     shouldKeepListeningRef.current = false
     recognitionRef.current?.stop()
     setIsListening(false)
-  }
+  }, [])
 
   function startListening() {
     if (typeof window === "undefined") return
@@ -179,30 +193,53 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
       recognition.lang = "en-US"
 
       recognition.onresult = (event: SpeechRecognitionEventLike) => {
-        let transcript = ""
+        let finalTranscript = ""
+        let interim = ""
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const result = event.results[i]
-          if (result.isFinal) transcript += result[0].transcript
+          const transcript = result[0].transcript
+
+          if (result.isFinal) {
+            finalTranscript += transcript
+          } else {
+            interim += transcript
+          }
         }
 
-        if (transcript.trim() === "") return
+        // Display interim results in real-time as user speaks
+        if (interim.trim() !== "") {
+          setInterimTranscript(interim.trim())
+        }
 
-        setCurrentAnswer(prev => {
-          const safePrev = prev.trim()
-          if (safePrev === "") return transcript.trim()
-          return `${safePrev} ${transcript.trim()}`.trim()
-        })
+        // Accumulate final results into the answer
+        if (finalTranscript.trim() !== "") {
+          setCurrentAnswer(prev => {
+            const safePrev = prev.trim()
+            if (safePrev === "") return finalTranscript.trim()
+            return `${safePrev} ${finalTranscript.trim()}`.trim()
+          })
+          // Clear interim once finalized
+          setInterimTranscript("")
+        }
       }
 
       recognition.onerror = () => {
         setIsListening(false)
         shouldKeepListeningRef.current = false
+        setInterimTranscript("")
+        autoSubmitAfterListeningRef.current = false
         toast.error("Microphone input failed")
       }
 
       recognition.onend = () => {
-        if (shouldKeepListeningRef.current) {
+        setInterimTranscript("")
+        
+        // If user stopped listening (not continuing), signal to auto-submit
+        if (!shouldKeepListeningRef.current && autoSubmitAfterListeningRef.current) {
+          autoSubmitAfterListeningRef.current = false
+          setShouldAutoSubmit(true)
+        } else if (shouldKeepListeningRef.current) {
           recognition.start()
         } else {
           setIsListening(false)
@@ -253,7 +290,7 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
     speakAssistant(result.response)
   }
 
-  async function handleSendAnswer() {
+  const handleSendAnswer = useCallback(async () => {
     const answer = currentAnswer.trim()
     if (!answer || isLoading) return
 
@@ -263,6 +300,7 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
     ]
     setChatHistory(updatedHistory)
     setCurrentAnswer("")
+    setInterimTranscript("")
     setIsLoading(true)
 
     const result = await sendInterviewMessage({
@@ -287,7 +325,7 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
     ])
     setQuestionCount(prev => prev + 1)
     speakAssistant(result.response)
-  }
+  }, [currentAnswer, isLoading, chatHistory, jobRole, mode, questionCount, resumeText, speakAssistant])
 
   async function handleEndInterview() {
     setState("evaluating")
@@ -328,6 +366,8 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
     setChatHistory([])
     setQuestionCount(0)
     setCurrentAnswer("")
+    setInterimTranscript("")
+    setShouldAutoSubmit(false)
     setEvaluation(null)
     setJobRole("")
   }
@@ -385,18 +425,28 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
 
       {state === "interviewing" && (
         <div className="flex gap-2 pt-4 border-t">
-          <Input
-            value={currentAnswer}
-            onChange={e => setCurrentAnswer(e.target.value)}
-            placeholder={mode === "voice" ? "Speak or type your answer..." : "Type your answer..."}
-            disabled={isLoading}
-            onKeyDown={e => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault()
-                handleSendAnswer()
-              }
-            }}
-          />
+          <div className="flex-1 relative">
+            <Input
+              value={currentAnswer}
+              onChange={e => setCurrentAnswer(e.target.value)}
+              placeholder={mode === "voice" ? "Speak or type your answer..." : "Type your answer..."}
+              disabled={isLoading}
+              onKeyDown={e => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSendAnswer()
+                }
+              }}
+            />
+            {interimTranscript && (
+              <div className="absolute inset-0 flex items-center px-3 pointer-events-none text-muted-foreground text-sm italic">
+                <span className="line-clamp-1">
+                  {currentAnswer}
+                  <span className="font-light">{currentAnswer && " "}{interimTranscript}</span>
+                </span>
+              </div>
+            )}
+          </div>
           {mode === "voice" && (
             <Button
               variant={isListening ? "destructive" : "outline"}
