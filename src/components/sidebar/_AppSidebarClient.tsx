@@ -12,7 +12,7 @@ export function AppSidebarClient({ children }: { children: ReactNode }) {
       <div className="flex flex-col w-full">
         <div className="p-2 border-b flex items-center gap-1">
           <SidebarTrigger />
-          <span className="text-xl">WDS Jobs</span>
+          <span className="text-xl">Jobify</span>
         </div>
         <div className="flex-1 flex">{children}</div>
       </div>
