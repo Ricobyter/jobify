@@ -190,10 +190,18 @@ export async function getUserResumeText(): Promise<string> {
 
   const resume = await db.query.UserResumeTable.findFirst({
     where: eq(UserResumeTable.userId, userId),
-    columns: { aiSummary: true },
+    columns: { aiSummary: true, resumeFileUrl: true },
   })
 
-  return resume?.aiSummary ?? ""
+  if (resume?.aiSummary != null && resume.aiSummary.trim() !== "") {
+    return resume.aiSummary
+  }
+
+  if (resume?.resumeFileUrl != null) {
+    return "Resume is uploaded, but AI summary is still processing. Continue the interview using role-specific questions without resume-specific assumptions."
+  }
+
+  return ""
 }
 
 export async function sendInterviewMessage({
