@@ -11,6 +11,8 @@ export function ClerkProvider({ children }: { children: ReactNode }) {
     // <Suspense>
     <OriginalClerkProvider
       appearance={isDarkMode ? { baseTheme: [dark] } : undefined}
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/"
     >
       {children}
     </OriginalClerkProvider>
