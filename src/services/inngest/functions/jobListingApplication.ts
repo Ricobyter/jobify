@@ -59,10 +59,20 @@ export const rankApplication = inngest.createFunction(
       getJobListing,
     ])
 
-    if (resumeSummary == null || jobListing == null) return
+    if (jobListing == null) return
+
+    // Skip only when we have no applicant text at all.
+    if (resumeSummary == null && coverLetter == null) return
 
     await applicantRankingAgent.run(
-      JSON.stringify({ coverLetter, resumeSummary, jobListingId, userId })
+      JSON.stringify({
+        coverLetter,
+        resumeSummary,
+        isProvisional: resumeSummary == null,
+        jobListing,
+        jobListingId,
+        userId,
+      })
     )
   }
 )
