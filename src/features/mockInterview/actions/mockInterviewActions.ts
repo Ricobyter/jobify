@@ -28,6 +28,12 @@ function buildSystemPrompt(
   questionCount: number,
   isComplete: boolean
 ) {
+  const resumeReady =
+    resumeText.trim() !== "" &&
+    !resumeText.startsWith(
+      "Resume is uploaded, but AI summary is still processing"
+    )
+
   return `You are an AI interviewer integrated into this app.
 
 Your job is to:
@@ -98,6 +104,14 @@ easy → medium → hard
 - No repetition
 - No multiple questions
 - Stay strictly resume-based
+
+8. Resume grounding:
+- RESUME_READY: ${resumeReady}
+- If RESUME_READY is true, every interview question must reference a specific
+  detail from RESUME_TEXT (project, technology, responsibility, achievement,
+  or experience) and tie it to JOB_ROLE.
+- If RESUME_READY is false, ask role-specific questions without pretending to
+  know resume details.
 
 6. Voice Mode:
 - 1–2 sentences

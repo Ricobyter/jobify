@@ -34,9 +34,47 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   MinusCircleIcon,
+  MicIcon,
+  MicOffIcon,
+  Volume2Icon,
 } from "lucide-react"
 
 type InterviewState = "setup" | "interviewing" | "evaluating" | "evaluated"
+
+type SpeechRecognitionAlternativeLike = {
+  transcript: string
+}
+
+type SpeechRecognitionResultLike = {
+  isFinal: boolean
+  [index: number]: SpeechRecognitionAlternativeLike
+}
+
+type SpeechRecognitionEventLike = {
+  resultIndex: number
+  results: {
+    length: number
+    [index: number]: SpeechRecognitionResultLike
+  }
+}
+
+type SpeechRecognitionErrorEventLike = {
+  error?: string
+}
+
+type SpeechRecognitionLike = {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null
+  onend: (() => void) | null
+  start: () => void
+  stop: () => void
+  abort: () => void
+}
+
+type SpeechRecognitionCtor = new () => SpeechRecognitionLike
 
 export function MockInterviewClient({ resumeText }: { resumeText: string }) {
   const [state, setState] = useState<InterviewState>("setup")
@@ -46,12 +84,142 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
   const [questionCount, setQuestionCount] = useState(0)
   const [currentAnswer, setCurrentAnswer] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [voiceSupported, setVoiceSupported] = useState(false)
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
+  const shouldKeepListeningRef = useRef(false)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [chatHistory, isLoading])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const SpeechRecognition =
+      (window as Window & {
+        SpeechRecognition?: SpeechRecognitionCtor
+        webkitSpeechRecognition?: SpeechRecognitionCtor
+      }).SpeechRecognition ??
+      (window as Window & { webkitSpeechRecognition?: SpeechRecognitionCtor })
+        .webkitSpeechRecognition
+
+    setVoiceSupported(SpeechRecognition != null)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.abort()
+      if (typeof window !== "undefined") {
+        window.speechSynthesis.cancel()
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (mode !== "voice") {
+      stopListening()
+      stopSpeaking()
+    }
+  }, [mode])
+
+  function stopSpeaking() {
+    if (typeof window === "undefined") return
+    window.speechSynthesis.cancel()
+    setIsSpeaking(false)
+  }
+
+  function speakAssistant(text: string) {
+    if (mode !== "voice" || typeof window === "undefined") return
+
+    stopSpeaking()
+
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.rate = 1
+    utterance.pitch = 1
+    utterance.onstart = () => setIsSpeaking(true)
+    utterance.onend = () => setIsSpeaking(false)
+    utterance.onerror = () => setIsSpeaking(false)
+    window.speechSynthesis.speak(utterance)
+  }
+
+  function stopListening() {
+    shouldKeepListeningRef.current = false
+    recognitionRef.current?.stop()
+    setIsListening(false)
+  }
+
+  function startListening() {
+    if (typeof window === "undefined") return
+    if (!voiceSupported) {
+      toast.error("Voice mode is not supported in this browser")
+      return
+    }
+
+    const SpeechRecognition =
+      (window as Window & {
+        SpeechRecognition?: SpeechRecognitionCtor
+        webkitSpeechRecognition?: SpeechRecognitionCtor
+      }).SpeechRecognition ??
+      (window as Window & { webkitSpeechRecognition?: SpeechRecognitionCtor })
+        .webkitSpeechRecognition
+
+    if (SpeechRecognition == null) {
+      toast.error("Voice mode is not supported in this browser")
+      return
+    }
+
+    if (recognitionRef.current == null) {
+      const recognition = new SpeechRecognition()
+      recognition.continuous = true
+      recognition.interimResults = true
+      recognition.lang = "en-US"
+
+      recognition.onresult = (event: SpeechRecognitionEventLike) => {
+        let transcript = ""
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i]
+          if (result.isFinal) transcript += result[0].transcript
+        }
+
+        if (transcript.trim() === "") return
+
+        setCurrentAnswer(prev => {
+          const safePrev = prev.trim()
+          if (safePrev === "") return transcript.trim()
+          return `${safePrev} ${transcript.trim()}`.trim()
+        })
+      }
+
+      recognition.onerror = () => {
+        setIsListening(false)
+        shouldKeepListeningRef.current = false
+        toast.error("Microphone input failed")
+      }
+
+      recognition.onend = () => {
+        if (shouldKeepListeningRef.current) {
+          recognition.start()
+        } else {
+          setIsListening(false)
+        }
+      }
+
+      recognitionRef.current = recognition
+    }
+
+    try {
+      shouldKeepListeningRef.current = true
+      recognitionRef.current.start()
+      setIsListening(true)
+    } catch {
+      setIsListening(true)
+    }
+  }
 
   async function handleStartInterview() {
     if (!jobRole.trim()) {
@@ -82,6 +250,7 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
 
     setChatHistory([{ role: "assistant", content: result.response }])
     setQuestionCount(1)
+    speakAssistant(result.response)
   }
 
   async function handleSendAnswer() {
@@ -117,6 +286,7 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
       { role: "assistant", content: result.response },
     ])
     setQuestionCount(prev => prev + 1)
+    speakAssistant(result.response)
   }
 
   async function handleEndInterview() {
@@ -152,6 +322,8 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
   }
 
   function handleReset() {
+    stopListening()
+    stopSpeaking()
     setState("setup")
     setChatHistory([])
     setQuestionCount(0)
@@ -216,7 +388,7 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
           <Input
             value={currentAnswer}
             onChange={e => setCurrentAnswer(e.target.value)}
-            placeholder="Type your answer..."
+            placeholder={mode === "voice" ? "Speak or type your answer..." : "Type your answer..."}
             disabled={isLoading}
             onKeyDown={e => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -225,6 +397,21 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
               }
             }}
           />
+          {mode === "voice" && (
+            <Button
+              variant={isListening ? "destructive" : "outline"}
+              onClick={isListening ? stopListening : startListening}
+              size="icon"
+              disabled={isLoading || !voiceSupported}
+              title={isListening ? "Stop listening" : "Start listening"}
+            >
+              {isListening ? (
+                <MicOffIcon className="size-4" />
+              ) : (
+                <MicIcon className="size-4" />
+              )}
+            </Button>
+          )}
           <Button
             onClick={handleSendAnswer}
             disabled={isLoading || !currentAnswer.trim()}
@@ -240,6 +427,19 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
       {questionCount < 3 && state === "interviewing" && (
         <p className="text-xs text-muted-foreground text-center mt-2">
           Answer at least 3 questions before ending the interview
+        </p>
+      )}
+
+      {mode === "voice" && state === "interviewing" && (
+        <p className="text-xs text-muted-foreground text-center mt-1 flex items-center justify-center gap-1">
+          <Volume2Icon className="size-3.5" />
+          {isSpeaking
+            ? "AI is speaking"
+            : isListening
+              ? "Listening to your answer"
+              : voiceSupported
+                ? "Use mic button to dictate answer"
+                : "Voice mode not supported in this browser"}
         </p>
       )}
     </div>
