@@ -13,20 +13,44 @@ type ResumeSchemaShape = {
 }
 
 export async function getResumeSchemaShape(): Promise<ResumeSchemaShape> {
-  const result = await db.execute(sql`
-    select column_name
-    from information_schema.columns
-    where table_schema = 'public'
-      and table_name = 'user_resumes'
-      and column_name in ('id', 'title')
-  `)
+  // Retry logic for schema detection (connection can be flaky)
+  let lastError: Error | null = null
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const result = await db.execute(sql`
+        select column_name
+        from information_schema.columns
+        where table_schema = 'public'
+          and table_name = 'user_resumes'
+          and column_name in ('id', 'title')
+      `)
 
-  const rows = ((result as unknown) as { rows?: Array<{ column_name: string }> }).rows ?? []
-  const columns = new Set(rows.map(row => row.column_name))
+      const rows = ((result as unknown) as { rows?: Array<{ column_name: string }> }).rows ?? []
+      const columns = new Set(rows.map(row => row.column_name))
 
+      const shape = {
+        hasIdColumn: columns.has('id'),
+        hasTitleColumn: columns.has('title'),
+      }
+      
+      if (attempt > 1) {
+        console.log(`[getResumeSchemaShape] Success on attempt ${attempt}:`, shape)
+      }
+      return shape
+    } catch (err) {
+      lastError = err as Error
+      console.warn(`[getResumeSchemaShape] Attempt ${attempt} failed:`, lastError.message)
+      if (attempt < 3) {
+        await new Promise(resolve => setTimeout(resolve, 500 * attempt))
+      }
+    }
+  }
+
+  // If all attempts fail, default to new schema (safer for new deployments)
+  console.error('[getResumeSchemaShape] All attempts failed, defaulting to new schema:', lastError?.message)
   return {
-    hasIdColumn: columns.has('id'),
-    hasTitleColumn: columns.has('title'),
+    hasIdColumn: true,
+    hasTitleColumn: true,
   }
 }
 
@@ -145,28 +169,17 @@ export async function getUserResumeById(userId: string, resumeId: string) {
   const schemaShape = await getResumeSchemaShape()
 
   if (schemaShape.hasIdColumn && schemaShape.hasTitleColumn) {
-    return db.query.UserResumeTable.findFirst({
+    const resume = await db.query.UserResumeTable.findFirst({
       where: and(
         eq(UserResumeTable.userId, userId),
         eq(UserResumeTable.id, resumeId)
       ),
     })
+    console.log('[getUserResumeById] Modern schema, found resume:', resume ? 'yes' : 'no')
+    return resume
   }
 
-  const result = await db.execute(sql`
-    select
-      "userId" as id,
-      'Resume' as title,
-      "resumeFileUrl",
-      "resumeFileKey",
-      "aiSummary",
-      "createdAt",
-      "updatedAt"
-    from "user_resumes"
-    where "userId" = ${resumeId}
-    limit 1
-  `)
-
-  const rows = (((result as unknown) as { rows?: typeof UserResumeTable.$inferSelect[] }).rows ?? []) as typeof UserResumeTable.$inferSelect[]
-  return rows[0] ?? null
+  // Legacy schema doesn't support resumeId
+  console.log('[getUserResumeById] Legacy schema, cannot query by resumeId')
+  return null
 }

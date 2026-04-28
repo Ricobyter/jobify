@@ -39,17 +39,19 @@ export const customFileRouter = {
           resumeFileUrl: file.ufsUrl,
           resumeFileKey: file.key,
         })
-        console.log("[UT] upsertUserResume done")
+        console.log("[UT] upsertUserResume done, resume:", { id: resume?.id, userId: resume?.id })
 
         if (resume?.id == null) {
           throw new Error("Failed to create resume record")
         }
 
+        console.log("[UT] Sending Inngest event with:", { userId, resumeId: resume.id })
         inngest
           .send({
             name: "app/resume.uploaded",
             data: { userId, resumeId: resume.id },
           })
+          .then(() => console.log("[UT] Inngest event sent successfully"))
           .catch(err => console.error("[UT] Failed to send inngest event:", err))
       } catch (err) {
         console.error("[UT] upsertUserResume FAILED:", err)
