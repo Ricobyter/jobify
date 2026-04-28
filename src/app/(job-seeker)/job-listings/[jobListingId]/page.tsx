@@ -3,6 +3,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
+import { db } from "@/drizzle/db"
 import { JobListingItems } from "../../_shared/JobListingItems"
 import { IsBreakpoint } from "@/components/IsBreakpoint"
 import { Suspense } from "react"
