@@ -1,9 +1,6 @@
-import { db } from "@/drizzle/db"
 import { inngest } from "../client"
-import { eq } from "drizzle-orm"
-import { UserResumeTable } from "@/drizzle/schema"
 import { env } from "@/data/env/server"
-import { updateUserResume } from "@/features/users/db/userResumes"
+import { getUserResumeById, updateUserResume } from "@/features/users/db/userResumes"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 
 export const createAiSummaryOfUploadedResume = inngest.createFunction(
@@ -15,13 +12,11 @@ export const createAiSummaryOfUploadedResume = inngest.createFunction(
     event: "app/resume.uploaded",
   },
   async ({ step, event }) => {
-    const { resumeId } = event.data
+    const { userId, resumeId } = event.data
 
     const userResume = await step.run("get-user-resume", async () => {
-      return await db.query.UserResumeTable.findFirst({
-        where: eq(UserResumeTable.id, resumeId),
-        columns: { resumeFileUrl: true },
-      })
+      const resume = await getUserResumeById(userId, resumeId)
+      return resume == null ? null : { resumeFileUrl: resume.resumeFileUrl }
     })
 
     if (userResume == null) return

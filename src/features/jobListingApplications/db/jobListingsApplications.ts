@@ -1,12 +1,34 @@
 import { db } from "@/drizzle/db"
 import { JobListingApplicationTable } from "@/drizzle/schema"
 import { revalidateJobListingApplicationCache } from "./cache/jobListingApplications"
-import { and, eq } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
+import { getResumeSchemaShape } from "@/features/users/db/userResumes"
 
 export async function insertJobListingApplication(
   application: typeof JobListingApplicationTable.$inferInsert
 ) {
-  await db.insert(JobListingApplicationTable).values(application)
+  const schemaShape = await getResumeSchemaShape()
+
+  if (schemaShape.hasIdColumn && schemaShape.hasTitleColumn) {
+    await db.insert(JobListingApplicationTable).values(application)
+  } else {
+    const stage = (application as { stage?: string }).stage ?? "applied"
+    await db.execute(sql`
+      insert into "job_listing_applications" (
+        "jobListingId",
+        "userId",
+        "coverLetter",
+        "rating",
+        "stage"
+      ) values (
+        ${application.jobListingId},
+        ${application.userId},
+        ${application.coverLetter ?? null},
+        ${application.rating ?? null},
+        ${stage}
+      )
+    `)
+  }
 
   revalidateJobListingApplicationCache(application)
 }

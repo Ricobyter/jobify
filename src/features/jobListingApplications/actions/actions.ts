@@ -5,7 +5,6 @@ import {
   ApplicationStage,
   applicationStages,
   JobListingTable,
-  UserResumeTable,
 } from "@/drizzle/schema"
 import { getJobListingIdTag } from "@/features/jobListings/db/cache/jobListings"
 import { getUserResumeIdTag } from "@/features/users/db/cache/userResumes"
@@ -23,6 +22,7 @@ import {
 } from "../db/jobListingsApplications"
 import { inngest } from "@/services/inngest/client"
 import { hasOrgUserPermission } from "@/services/clerk/lib/orgUserPermissions"
+import { getUserResumeById } from "@/features/users/db/userResumes"
 
 export async function createJobListingApplication(
   jobListingId: string,
@@ -201,11 +201,5 @@ async function getUserResume(userId: string, resumeId: string) {
   "use cache"
   cacheTag(getUserResumeIdTag(userId))
 
-  return db.query.UserResumeTable.findFirst({
-    where: and(
-      eq(UserResumeTable.userId, userId),
-      eq(UserResumeTable.id, resumeId)
-    ),
-    columns: { id: true },
-  })
+  return getUserResumeById(userId, resumeId)
 }
