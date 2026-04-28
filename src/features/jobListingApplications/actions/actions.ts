@@ -53,7 +53,6 @@ export async function createJobListingApplication(
   await insertJobListingApplication({
     jobListingId,
     userId,
-    resumeId: userResume.id,
     ...data,
   })
 
