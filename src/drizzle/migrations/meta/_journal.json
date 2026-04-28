@@ -8,6 +8,20 @@
       "when": 1749129359810,
       "tag": "0000_moaning_human_robot",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777334400000,
+      "tag": "0001_multiple_user_resumes",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777333857825,
+      "tag": "0002_fair_warpath",
+      "breakpoints": true
     }
   ]
 }

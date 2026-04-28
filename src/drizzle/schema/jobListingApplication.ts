@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core"
 import { JobListingTable } from "./jobListing"
 import { UserTable } from "./user"
+import { UserResumeTable } from "./userResume"
 import { createdAt, updatedAt } from "../schemaHelpers"
 import { relations } from "drizzle-orm"
 
@@ -34,6 +35,9 @@ export const JobListingApplicationTable = pgTable(
     userId: varchar()
       .references(() => UserTable.id, { onDelete: "cascade" })
       .notNull(),
+    resumeId: uuid()
+      .references(() => UserResumeTable.id)
+      .notNull(),
     coverLetter: text(),
     rating: integer(),
     stage: applicationStageEnum().notNull().default("applied"),
@@ -53,6 +57,10 @@ export const jobListingApplicationRelations = relations(
     user: one(UserTable, {
       fields: [JobListingApplicationTable.userId],
       references: [UserTable.id],
+    }),
+    resume: one(UserResumeTable, {
+      fields: [JobListingApplicationTable.resumeId],
+      references: [UserResumeTable.id],
     }),
   })
 )

@@ -2,7 +2,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -12,82 +11,76 @@ import { getCurrentUser } from "@/services/clerk/lib/getCurrentAuth"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { getUserResumeIdTag } from "@/features/users/db/cache/userResumes"
-import { db } from "@/drizzle/db"
-import { UserResumeTable } from "@/drizzle/schema"
-import { eq } from "drizzle-orm"
-import { cacheTag } from "next/dist/server/use-cache/cache-tag"
 import { MarkdownRenderer } from "@/components/markdown/MarkdownRenderer"
+import { getUserResumes } from "@/features/users/db/userResumes"
 
 export default function UserResumePage() {
   return (
     <div className="max-w-3xl mx-auto py-8 space-y-6 px-4">
-      <h1 className="text-2xl font-bold">Upload Your Resume</h1>
+      <h1 className="text-2xl font-bold">Manage Your Resumes</h1>
       <Card>
+        <CardHeader className="border-b">
+          <CardTitle>Upload a New Resume</CardTitle>
+          <CardDescription>
+            Upload multiple versions and give each one a clear title.
+          </CardDescription>
+        </CardHeader>
         <CardContent>
           <DropzoneClient />
         </CardContent>
-        <Suspense>
-          <ResumeDetails />
-        </Suspense>
       </Card>
       <Suspense>
-        <AISummaryCard />
+        <ResumesList />
       </Suspense>
     </div>
   )
 }
 
-async function ResumeDetails() {
+async function ResumesList() {
   const { userId } = await getCurrentUser()
   if (userId == null) return notFound()
 
-  const userResume = await getUserResume(userId)
-  if (userResume == null) return null
-
-  return (
-    <CardFooter>
-      <Button asChild>
-        <Link
-          href={userResume.resumeFileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          View Resume
-        </Link>
-      </Button>
-    </CardFooter>
-  )
-}
-
-async function AISummaryCard() {
-  const { userId } = await getCurrentUser()
-  if (userId == null) return notFound()
-
-  const userResume = await getUserResume(userId)
-  if (userResume == null || userResume.aiSummary == null) return null
+  const resumes = await getUserResumes(userId)
+  if (resumes.length === 0) return null
 
   return (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle>AI Summary</CardTitle>
+        <CardTitle>Your Resumes</CardTitle>
         <CardDescription>
-          This is an AI-generated summary of your resume. This is used by
-          employers to quickly understand your qualifications and experience.
+          These are the resumes you can choose from when applying or practicing interviews.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <MarkdownRenderer source={userResume.aiSummary} />
+      <CardContent className="space-y-4">
+        {resumes.map(resume => (
+          <div key={resume.id} className="rounded-lg border p-4 space-y-3">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="font-semibold">{resume.title}</h3>
+                <p className="text-xs text-muted-foreground">
+                  Uploaded {resume.createdAt.toLocaleDateString()}
+                </p>
+              </div>
+              <Button asChild variant="outline" size="sm">
+                <Link
+                  href={resume.resumeFileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View File
+                </Link>
+              </Button>
+            </div>
+            {resume.aiSummary ? (
+              <MarkdownRenderer source={resume.aiSummary} />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                AI summary is still processing.
+              </p>
+            )}
+          </div>
+        ))}
       </CardContent>
     </Card>
   )
-}
-
-async function getUserResume(userId: string) {
-  "use cache"
-  cacheTag(getUserResumeIdTag(userId))
-
-  return db.query.UserResumeTable.findFirst({
-    where: eq(UserResumeTable.userId, userId),
-  })
 }

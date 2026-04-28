@@ -6,6 +6,11 @@ export default defineConfig({
   schema: "./src/drizzle/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: env.DATABASE_URL,
+    host: env.DB_HOST,
+    port: Number(env.DB_PORT),
+    user: env.DB_USER,
+    password: env.DB_PASSWORD,
+    database: env.DB_NAME.split("?")[0],
+    ssl: { rejectUnauthorized: false },
   },
 })

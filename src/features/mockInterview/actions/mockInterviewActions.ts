@@ -6,6 +6,7 @@ import { db } from "@/drizzle/db"
 import { UserResumeTable } from "@/drizzle/schema"
 import { eq } from "drizzle-orm"
 import { env } from "@/data/env/server"
+import { getUserResumes } from "@/features/users/db/userResumes"
 
 export type ChatMessage = { role: "user" | "assistant"; content: string }
 
@@ -216,6 +217,30 @@ export async function getUserResumeText(): Promise<string> {
   }
 
   return ""
+}
+
+export async function getUserResumeOptions(): Promise<
+  {
+    id: string
+    title: string
+    resumeText: string
+  }[]
+> {
+  const { userId } = await getCurrentUser()
+  if (!userId) return []
+
+  const resumes = await getUserResumes(userId)
+
+  return resumes.map(resume => ({
+    id: resume.id,
+    title: resume.title,
+    resumeText:
+      resume.aiSummary != null && resume.aiSummary.trim() !== ""
+        ? resume.aiSummary
+        : resume.resumeFileUrl != null
+          ? "Resume is uploaded, but AI summary is still processing. Continue the interview using role-specific questions without resume-specific assumptions."
+          : "",
+  }))
 }
 
 export async function sendInterviewMessage({

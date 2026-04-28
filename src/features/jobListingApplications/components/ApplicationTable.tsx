@@ -48,12 +48,13 @@ type Application = Pick<
   "createdAt" | "stage" | "rating" | "jobListingId"
 > & {
   coverLetterMarkdown: ReactNode | null
+  resume: (Pick<
+    typeof UserResumeTable.$inferSelect,
+    "title" | "resumeFileUrl"
+  > & {
+    markdownSummary: ReactNode | null
+  }) | null
   user: Pick<typeof UserTable.$inferSelect, "id" | "name" | "imageUrl"> & {
-    resume:
-      | (Pick<typeof UserResumeTable.$inferSelect, "resumeFileUrl"> & {
-          markdownSummary: ReactNode | null
-        })
-      | null
   }
 }
 
@@ -136,13 +137,14 @@ function getColumns(
       id: "actions",
       cell: ({ row }) => {
         const jobListing = row.original
-        const resume = jobListing.user.resume
+        const resume = jobListing.resume
 
         return (
           <ActionCell
             coverLetterMarkdown={jobListing.coverLetterMarkdown}
             resumeMarkdown={resume?.markdownSummary}
             resumeUrl={resume?.resumeFileUrl}
+            resumeTitle={resume?.title}
             userName={jobListing.user.name}
           />
         )
@@ -360,11 +362,13 @@ function RatingCell({
 
 function ActionCell({
   resumeUrl,
+  resumeTitle,
   userName,
   resumeMarkdown,
   coverLetterMarkdown,
 }: {
   resumeUrl: string | null | undefined
+  resumeTitle: string | null | undefined
   userName: string
   resumeMarkdown: ReactNode | null
   coverLetterMarkdown: ReactNode | null
@@ -385,7 +389,7 @@ function ActionCell({
         <DropdownMenuContent align="end">
           {resumeUrl != null || resumeMarkdown != null ? (
             <DropdownMenuItem onClick={() => setOpenModal("resume")}>
-              View Resume
+              View Selected Resume
             </DropdownMenuItem>
           ) : (
             <DropdownMenuLabel className="text-muted-foreground">
@@ -425,7 +429,7 @@ function ActionCell({
           <DialogContent className="lg:max-w-5xl md:max-w-3xl max-h-[calc(100%-2rem)] overflow-hidden flex flex-col">
             <DialogHeader>
               <DialogTitle>Resume</DialogTitle>
-              <DialogDescription>{userName}</DialogDescription>
+              <DialogDescription>{resumeTitle ?? userName}</DialogDescription>
               {resumeUrl && (
                 <Button asChild className="self-start">
                   <Link

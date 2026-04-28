@@ -31,8 +31,9 @@ type Events = {
     }
   }
   "app/resume.uploaded": {
-    user: {
-      id: string
+    data: {
+      userId: string
+      resumeId: string
     }
   }
   "dev/sync.user": {

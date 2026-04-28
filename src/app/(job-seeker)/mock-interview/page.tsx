@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card"
 import { MockInterviewClient } from "@/features/mockInterview/components/MockInterviewClient"
 import {
-  getUserResumeText,
+  getUserResumeOptions,
 } from "@/features/mockInterview/actions/mockInterviewActions"
 import { SignUpButton } from "@/services/clerk/components/AuthButtons"
 import { getCurrentUser } from "@/services/clerk/lib/getCurrentAuth"
@@ -25,7 +25,7 @@ export default function MockInterviewPage() {
           }}
           loadingFallback={
             <LoadingSwap isLoading>
-              <InterviewShell resumeText="" />
+              <InterviewShell resumes={[]} />
             </LoadingSwap>
           }
           otherwise={<NoPermission />}
@@ -38,11 +38,11 @@ export default function MockInterviewPage() {
 }
 
 async function InterviewShellAsync() {
-  const resumeText = await getUserResumeText()
-  return <InterviewShell resumeText={resumeText ?? ""} />
+  const resumes = await getUserResumeOptions()
+  return <InterviewShell resumes={resumes} />
 }
 
-function InterviewShell({ resumeText }: { resumeText: string }) {
+function InterviewShell({ resumes }: { resumes: { id: string; title: string; resumeText: string }[] }) {
   return (
     <>
       <CardHeader>
@@ -53,7 +53,7 @@ function InterviewShell({ resumeText }: { resumeText: string }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="min-h-[420px] flex flex-col">
-        <MockInterviewClient resumeText={resumeText} />
+        <MockInterviewClient resumes={resumes} />
       </CardContent>
     </>
   )

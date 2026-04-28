@@ -297,15 +297,15 @@ async function Applications({ jobListingId }: { jobListingId: string }) {
         ...a,
         user: {
           ...a.user,
-          resume: a.user.resume
-            ? {
-                ...a.user.resume,
-                markdownSummary: a.user.resume.aiSummary ? (
-                  <MarkdownRenderer source={a.user.resume.aiSummary} />
-                ) : null,
-              }
-            : null,
         },
+        resume: a.resume
+          ? {
+              ...a.resume,
+              markdownSummary: a.resume.aiSummary ? (
+                <MarkdownRenderer source={a.resume.aiSummary} />
+              ) : null,
+            }
+          : null,
         coverLetterMarkdown: a.coverLetter ? (
           <MarkdownRenderer source={a.coverLetter} />
         ) : null,
@@ -340,13 +340,12 @@ async function getJobListingApplications(jobListingId: string) {
           name: true,
           imageUrl: true,
         },
-        with: {
-          resume: {
-            columns: {
-              resumeFileUrl: true,
-              aiSummary: true,
-            },
-          },
+      },
+      resume: {
+        columns: {
+          title: true,
+          resumeFileUrl: true,
+          aiSummary: true,
         },
       },
     },

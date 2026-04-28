@@ -76,10 +76,17 @@ type SpeechRecognitionLike = {
 
 type SpeechRecognitionCtor = new () => SpeechRecognitionLike
 
-export function MockInterviewClient({ resumeText }: { resumeText: string }) {
+export function MockInterviewClient({
+  resumes,
+}: {
+  resumes: { id: string; title: string; resumeText: string }[]
+}) {
   const [state, setState] = useState<InterviewState>("setup")
   const [jobRole, setJobRole] = useState("")
   const [mode, setMode] = useState<"text" | "voice">("text")
+  const [selectedResumeId, setSelectedResumeId] = useState(
+    resumes[0]?.id ?? ""
+  )
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
   const [questionCount, setQuestionCount] = useState(0)
   const [currentAnswer, setCurrentAnswer] = useState("")
@@ -95,6 +102,8 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
   const autoSubmitAfterListeningRef = useRef(false)
 
   const [shouldAutoSubmit, setShouldAutoSubmit] = useState(false)
+  const selectedResumeText =
+    resumes.find(resume => resume.id === selectedResumeId)?.resumeText ?? ""
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -274,7 +283,7 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
       chatHistory: [],
       questionCount: 0,
       isComplete: false,
-      resumeText,
+      resumeText: selectedResumeText,
     })
 
     setIsLoading(false)
@@ -325,7 +334,7 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
     ])
     setQuestionCount(prev => prev + 1)
     speakAssistant(result.response)
-  }, [currentAnswer, isLoading, chatHistory, jobRole, mode, questionCount, resumeText, speakAssistant])
+  }, [currentAnswer, isLoading, chatHistory, jobRole, mode, questionCount, selectedResumeText, speakAssistant])
 
   async function handleEndInterview() {
     setState("evaluating")
@@ -337,7 +346,7 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
       chatHistory,
       questionCount,
       isComplete: true,
-      resumeText,
+      resumeText: selectedResumeText,
     })
 
     setIsLoading(false)
@@ -378,7 +387,9 @@ export function MockInterviewClient({ resumeText }: { resumeText: string }) {
       setJobRole={setJobRole}
       mode={mode}
       setMode={setMode}
-      hasResume={!!resumeText}
+      resumes={resumes}
+      selectedResumeId={selectedResumeId}
+      setSelectedResumeId={setSelectedResumeId}
       onStart={handleStartInterview}
     />
   }
@@ -529,14 +540,18 @@ function SetupForm({
   setJobRole,
   mode,
   setMode,
-  hasResume,
+  resumes,
+  selectedResumeId,
+  setSelectedResumeId,
   onStart,
 }: {
   jobRole: string
   setJobRole: (v: string) => void
   mode: "voice" | "text"
   setMode: (v: "voice" | "text") => void
-  hasResume: boolean
+  resumes: { id: string; title: string; resumeText: string }[]
+  selectedResumeId: string
+  setSelectedResumeId: (v: string) => void
   onStart: () => void
 }) {
   const [loading, setLoading] = useState(false)
@@ -549,13 +564,34 @@ function SetupForm({
 
   return (
     <div className="space-y-6 max-w-lg w-full mx-auto">
-      {!hasResume && (
+      {resumes.length === 0 && (
         <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-400">
           No resume uploaded. The interview will use general questions for the role. Upload your resume in{" "}
           <a href="/user-settings/resume" className="underline font-medium">
             User Settings
           </a>{" "}
           for a personalized experience.
+        </div>
+      )}
+
+      {resumes.length > 0 && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Resume</label>
+          <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choose a resume" />
+            </SelectTrigger>
+            <SelectContent>
+              {resumes.map(resume => (
+                <SelectItem key={resume.id} value={resume.id}>
+                  {resume.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            The interview questions will adapt to the selected resume.
+          </p>
         </div>
       )}
 

@@ -15,9 +15,7 @@ import { and, eq } from "drizzle-orm"
 import {
   JobListingApplicationTable,
   JobListingTable,
-  UserResumeTable,
 } from "@/drizzle/schema"
-import { db } from "@/drizzle/db"
 import { getOrganizationIdTag } from "@/features/organizations/db/cache/organizations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { notFound } from "next/navigation"
@@ -37,7 +35,6 @@ import { SignUpButton } from "@/services/clerk/components/AuthButtons"
 import { getJobListingApplicationIdTag } from "@/features/jobListingApplications/db/cache/jobListingApplications"
 import { differenceInDays } from "date-fns"
 import { connection } from "next/server"
-import { getUserResumeIdTag } from "@/features/users/db/cache/userResumes"
 import {
   Dialog,
   DialogContent,
@@ -45,6 +42,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog"
+import { getUserResumes } from "@/features/users/db/userResumes"
 import { NewJobListingApplicationForm } from "@/features/jobListingApplications/components/NewJobListingApplicationForm"
 
 export default function JobListingPage({
@@ -207,15 +205,15 @@ async function ApplyButton({ jobListingId }: { jobListingId: string }) {
     )
   }
 
-  const userResume = await getUserResume(userId)
-  if (userResume == null) {
+  const userResumes = await getUserResumes(userId)
+  if (userResumes.length === 0) {
     return (
       <Popover>
         <PopoverTrigger asChild>
           <Button>Apply</Button>
         </PopoverTrigger>
         <PopoverContent className="flex flex-col gap-2">
-          You need to upload your resume before applying for a job.
+          You need to upload at least one resume before applying for a job.
           <Button asChild>
             <Link href="/user-settings/resume">Upload Resume</Link>
           </Button>
@@ -238,20 +236,17 @@ async function ApplyButton({ jobListingId }: { jobListingId: string }) {
           </DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto">
-          <NewJobListingApplicationForm jobListingId={jobListingId} />
+          <NewJobListingApplicationForm
+            jobListingId={jobListingId}
+            resumes={userResumes.map(resume => ({
+              id: resume.id,
+              title: resume.title,
+            }))}
+          />
         </div>
       </DialogContent>
     </Dialog>
   )
-}
-
-async function getUserResume(userId: string) {
-  "use cache"
-  cacheTag(getUserResumeIdTag(userId))
-
-  return db.query.UserResumeTable.findFirst({
-    where: eq(UserResumeTable.userId, userId),
-  })
 }
 
 async function getJobListingApplication({

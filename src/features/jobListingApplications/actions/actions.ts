@@ -36,7 +36,7 @@ export async function createJobListingApplication(
   if (userId == null) return permissionError
 
   const [userResume, jobListing] = await Promise.all([
-    getUserResume(userId),
+    getUserResume(userId, unsafeData.resumeId),
     getPublicJobListing(jobListingId),
   ])
   if (userResume == null || jobListing == null) return permissionError
@@ -53,6 +53,7 @@ export async function createJobListingApplication(
   await insertJobListingApplication({
     jobListingId,
     userId,
+    resumeId: userResume.id,
     ...data,
   })
 
@@ -197,12 +198,15 @@ async function getJobListing(id: string) {
   })
 }
 
-async function getUserResume(userId: string) {
+async function getUserResume(userId: string, resumeId: string) {
   "use cache"
   cacheTag(getUserResumeIdTag(userId))
 
   return db.query.UserResumeTable.findFirst({
-    where: eq(UserResumeTable.userId, userId),
-    columns: { userId: true },
+    where: and(
+      eq(UserResumeTable.userId, userId),
+      eq(UserResumeTable.id, resumeId)
+    ),
+    columns: { id: true },
   })
 }

@@ -15,11 +15,11 @@ export const createAiSummaryOfUploadedResume = inngest.createFunction(
     event: "app/resume.uploaded",
   },
   async ({ step, event }) => {
-    const { id: userId } = event.user
+    const { userId, resumeId } = event.data
 
     const userResume = await step.run("get-user-resume", async () => {
       return await db.query.UserResumeTable.findFirst({
-        where: eq(UserResumeTable.userId, userId),
+        where: eq(UserResumeTable.id, resumeId),
         columns: { resumeFileUrl: true },
       })
     })
@@ -52,7 +52,7 @@ export const createAiSummaryOfUploadedResume = inngest.createFunction(
     await step.run("save-ai-summary", async () => {
       if (resultText.length === 0) return
 
-      await updateUserResume(userId, { aiSummary: resultText })
+      await updateUserResume(resumeId, { aiSummary: resultText })
     })
   }
 )

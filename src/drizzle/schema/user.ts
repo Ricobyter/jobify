@@ -16,6 +16,6 @@ export const UserTable = pgTable("users", {
 
 export const userRelations = relations(UserTable, ({ one, many }) => ({
   notificationSettings: one(UserNotificationSettingsTable),
-  resume: one(UserResumeTable),
+  resumes: many(UserResumeTable),
   organizationUserSettings: many(OrganizationUserSettingsTable),
 }))
