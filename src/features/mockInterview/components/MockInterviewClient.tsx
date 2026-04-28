@@ -132,14 +132,6 @@ export function MockInterviewClient({
     }
   }, [])
 
-  useEffect(() => {
-    if (mode !== "voice") {
-      stopListening()
-      stopSpeaking()
-      setInterimTranscript("")
-    }
-  }, [mode, stopListening])
-
   function stopSpeaking() {
     if (typeof window === "undefined") return
     window.speechSynthesis.cancel()
@@ -166,6 +158,14 @@ export function MockInterviewClient({
     recognitionRef.current?.stop()
     setIsListening(false)
   }, [])
+
+  useEffect(() => {
+    if (mode !== "voice") {
+      stopListening()
+      stopSpeaking()
+      setInterimTranscript("")
+    }
+  }, [mode, stopListening])
 
   function startListening() {
     if (typeof window === "undefined") return
@@ -326,7 +326,16 @@ export function MockInterviewClient({
     ])
     setQuestionCount(prev => prev + 1)
     speakAssistant(result.response)
-  }, [currentAnswer, isLoading, chatHistory, jobRole, mode, questionCount, speakAssistant])
+  }, [
+    currentAnswer,
+    isLoading,
+    chatHistory,
+    jobRole,
+    mode,
+    questionCount,
+    selectedResumeText,
+    speakAssistant,
+  ])
 
   // Auto-submit when user stops listening and has an answer
   useEffect(() => {
