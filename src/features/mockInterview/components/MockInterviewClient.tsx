@@ -109,14 +109,6 @@ export function MockInterviewClient({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [chatHistory, isLoading])
 
-  // Auto-submit when user stops listening and has an answer
-  useEffect(() => {
-    if (shouldAutoSubmit && currentAnswer.trim() && !isLoading && mode === "voice") {
-      setShouldAutoSubmit(false)
-      void handleSendAnswer()
-    }
-  }, [shouldAutoSubmit, currentAnswer, isLoading, mode, handleSendAnswer])
-
   useEffect(() => {
     if (typeof window === "undefined") return
 
@@ -318,7 +310,7 @@ export function MockInterviewClient({
       chatHistory: updatedHistory,
       questionCount,
       isComplete: false,
-      resumeText,
+      resumeText: selectedResumeText,
     })
 
     setIsLoading(false)
@@ -335,6 +327,19 @@ export function MockInterviewClient({
     setQuestionCount(prev => prev + 1)
     speakAssistant(result.response)
   }, [currentAnswer, isLoading, chatHistory, jobRole, mode, questionCount, speakAssistant])
+
+  // Auto-submit when user stops listening and has an answer
+  useEffect(() => {
+    if (
+      shouldAutoSubmit &&
+      currentAnswer.trim() &&
+      !isLoading &&
+      mode === "voice"
+    ) {
+      setShouldAutoSubmit(false)
+      void handleSendAnswer()
+    }
+  }, [shouldAutoSubmit, currentAnswer, isLoading, mode, handleSendAnswer])
 
   async function handleEndInterview() {
     setState("evaluating")
