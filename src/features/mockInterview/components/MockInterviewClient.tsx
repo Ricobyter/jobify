@@ -334,7 +334,7 @@ export function MockInterviewClient({
     ])
     setQuestionCount(prev => prev + 1)
     speakAssistant(result.response)
-  }, [currentAnswer, isLoading, chatHistory, jobRole, mode, questionCount, selectedResumeText, speakAssistant])
+  }, [currentAnswer, isLoading, chatHistory, jobRole, mode, questionCount, speakAssistant])
 
   async function handleEndInterview() {
     setState("evaluating")

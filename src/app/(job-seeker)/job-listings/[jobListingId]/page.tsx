@@ -109,7 +109,7 @@ async function JobListingDetails({
   const nameInitials = jobListing.organization.name
     .split(" ")
     .splice(0, 4)
-    .map(word => word[0])
+    .map((word: string) => word[0])
     .join("")
 
   return (

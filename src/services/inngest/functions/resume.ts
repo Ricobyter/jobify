@@ -15,7 +15,7 @@ export const createAiSummaryOfUploadedResume = inngest.createFunction(
     event: "app/resume.uploaded",
   },
   async ({ step, event }) => {
-    const { userId, resumeId } = event.data
+    const { resumeId } = event.data
 
     const userResume = await step.run("get-user-resume", async () => {
       return await db.query.UserResumeTable.findFirst({

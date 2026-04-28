@@ -3,7 +3,6 @@ import { UploadThingError } from "uploadthing/server"
 import { getCurrentUser } from "../clerk/lib/getCurrentAuth"
 import { inngest } from "../inngest/client"
 import { upsertUserResume } from "@/features/users/db/userResumes"
-import { uploadthing } from "./client"
 import { ensureCurrentUserInDb } from "../clerk/lib/syncAuthToDb"
 import { z } from "zod"
 
