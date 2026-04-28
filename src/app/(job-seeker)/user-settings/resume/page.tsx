@@ -16,7 +16,7 @@ import { getUserResumes } from "@/features/users/db/userResumes"
 
 export default function UserResumePage() {
   return (
-    <div className="max-w-3xl mx-auto py-8 space-y-6 px-4">
+    <div className="max-w-4xl mx-auto py-8 space-y-6 px-4">
       <h1 className="text-2xl font-bold">Manage Your Resumes</h1>
       <Card>
         <CardHeader className="border-b">
@@ -53,10 +53,13 @@ async function ResumesList() {
       </CardHeader>
       <CardContent className="space-y-4">
         {resumes.map(resume => (
-          <div key={resume.id} className="rounded-lg border p-4 space-y-3">
+          <div
+            key={resume.id}
+            className="rounded-xl border bg-background p-4 space-y-4 shadow-sm"
+          >
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="font-semibold">{resume.title}</h3>
+              <div className="space-y-1">
+                <h3 className="font-semibold text-lg">{resume.title}</h3>
                 <p className="text-xs text-muted-foreground">
                   Uploaded {resume.createdAt.toLocaleDateString()}
                 </p>

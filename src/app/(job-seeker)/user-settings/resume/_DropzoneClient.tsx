@@ -13,20 +13,28 @@ export function DropzoneClient() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Resume Title</label>
+      <div className="rounded-xl border bg-background p-4 space-y-3 shadow-sm">
+        <div className="space-y-1">
+          <label htmlFor="resume-title" className="text-sm font-medium">
+            Resume Title
+          </label>
+          <p className="text-xs text-muted-foreground">
+            Give each uploaded resume a distinct title so you can choose the right one later.
+          </p>
+        </div>
         <Input
+          id="resume-title"
           value={title}
           onChange={event => setTitle(event.target.value)}
           placeholder="e.g. Senior Frontend Resume"
+          autoComplete="off"
+          className="bg-background"
         />
-        <p className="text-xs text-muted-foreground">
-          Give each uploaded resume a distinct title so you can choose the right one later.
-        </p>
       </div>
       <UploadDropzone
         endpoint="resumeUploader"
         input={{ title }}
+        className="w-full min-h-48"
         onClientUploadComplete={async (res) => {
           console.log("[DropzoneClient] onClientUploadComplete fired", res)
           setTitle("")
