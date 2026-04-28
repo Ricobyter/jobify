@@ -13,6 +13,8 @@ export const env = createEnv({
     UPLOADTHING_TOKEN: z.string().min(1),
     ANTHROPIC_API_KEY: z.string().min(1),
     GEMINI_API_KEY: z.string().min(1),
+    // Optional secondary Google/Gemini key (user may add another account/key)
+    GQOQ_API_KEY: z.string().optional(),
     GROQ_API_KEY: z.string().min(1),
     RESEND_API_KEY: z.string().min(1),
     SERVER_URL: z.string().min(1),

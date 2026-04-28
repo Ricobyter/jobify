@@ -85,31 +85,92 @@ export const createAiSummaryOfUploadedResume = inngest.createFunction(
 
     const resultText = await step.run("create-ai-summary", async () => {
       try {
-        return await retryWithExponentialBackoff(async () => {
-          const response = await fetch(userResume.resumeFileUrl)
-          if (!response.ok) {
-            throw new Error(`Failed to fetch resume file: ${response.status}`)
-          }
+        // Fetch file and attempt text extraction
+        const fetchResp = await fetch(userResume.resumeFileUrl)
+        if (!fetchResp.ok) {
+          throw new Error(`Failed to fetch resume file: ${fetchResp.status}`)
+        }
 
-          const pdfData = Buffer.from(await response.arrayBuffer()).toString("base64")
-          const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
+        const fileBuffer = Buffer.from(await fetchResp.arrayBuffer())
+
+        // Try to extract text from PDF for GROQ (text-model) summarization
+        let extractedText = ""
+        try {
+          const pdfModule = await import("pdf-parse")
+          const pdfRes = (await pdfModule.default(fileBuffer)) as { text?: string }
+          extractedText = (pdfRes.text || "").trim()
+          console.log('[Inngest] Extracted text length from PDF:', extractedText.length)
+        } catch (err) {
+          console.warn('[Inngest] PDF text extraction failed, will skip GROQ path:', err)
+        }
+
+        // If we have meaningful extracted text, prefer GROQ chat model first
+        if (extractedText && extractedText.length > 50 && env.GROQ_API_KEY) {
+          try {
+            const Groq = (await import('groq-sdk')).default
+            const groq = new Groq({ apiKey: env.GROQ_API_KEY })
+            const prompt = `Summarize the following resume and extract all key skills, experience, and qualifications. Format the summary as markdown. If the content does not look like a resume return 'N/A'.\n\n${extractedText}`
+
+            console.log('[Inngest] Calling GROQ chat model for resume summarization...')
+            const completion = await groq.chat.completions.create({
+              model: "llama-3.3-70b-versatile",
+              max_tokens: 1500,
+              messages: [
+                { role: 'system', content: 'You summarize resumes.' },
+                { role: 'user', content: prompt },
+              ],
+            })
+
+            const groqText = completion.choices?.[0]?.message?.content?.trim() ?? ""
+            if (groqText && groqText.length > 0) {
+              console.log('[Inngest] GROQ summary generated, length:', groqText.length)
+              return groqText
+            }
+          } catch (err) {
+            console.warn('[Inngest] GROQ summarization failed, falling back:', err)
+          }
+        }
+
+        // If GROQ path not used or failed, continue with Gemini primary/alternate
+        // Helper to call Gemini with a specific API key
+        const callGeminiWithKey = async (apiKey: string) => {
+          const genAI = new GoogleGenerativeAI(apiKey)
           const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 
-          console.log('[Inngest] Calling Gemini API...')
+          console.log('[Inngest] Calling Gemini API with provided key...')
           const result = await model.generateContent([
             {
               inlineData: {
                 mimeType: "application/pdf",
-                data: pdfData,
+                data: fileBuffer.toString("base64"),
               },
             },
             "Summarize the following resume and extract all key skills, experience, and qualifications. The summary should include all the information that a hiring manager would need to know about the candidate in order to determine if they are a good fit for a job. Format the summary as markdown. Do not return any other text. If the file does not look like a resume return the text 'N/A'.",
           ])
 
-          const text = result.response.text().trim()
-          console.log('[Inngest] AI summary generated, length:', text.length)
-          return text
-        }, 3)
+          return result.response.text().trim()
+        }
+
+        // Try primary GEMINI key first with retries
+        try {
+          return await retryWithExponentialBackoff(() => callGeminiWithKey(env.GEMINI_API_KEY), 3)
+        } catch (primaryErr) {
+          const primaryMsg = primaryErr instanceof Error ? primaryErr.message : String(primaryErr)
+          console.warn('[Inngest] Primary Gemini key failed:', primaryMsg.slice(0, 200))
+
+          // If user provided a secondary Google-like key (GQOQ_API_KEY), try that next
+          if (env.GQOQ_API_KEY && env.GQOQ_API_KEY !== env.GEMINI_API_KEY) {
+            try {
+              console.log('[Inngest] Trying alternate GQOQ API key')
+              return await retryWithExponentialBackoff(() => callGeminiWithKey(env.GQOQ_API_KEY as string), 3)
+            } catch (altErr) {
+              console.warn('[Inngest] Alternate GQOQ key also failed:', (altErr instanceof Error ? altErr.message : String(altErr)).slice(0,200))
+            }
+          }
+
+          // Rethrow the original error to trigger outer fallback handling
+          throw primaryErr
+        }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err)
         console.error('[Inngest] AI summary generation failed:', errorMsg.slice(0, 200))
