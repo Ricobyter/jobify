@@ -8,7 +8,7 @@ A full-stack job board application where **job seekers** find and apply for role
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         WDS Jobs                                │
+│                         Jobify                               │
 │                                                                 │
 │   ┌─────────────────────┐     ┌─────────────────────────────┐  │
 │   │     Job Seeker       │     │          Employer            │  │
@@ -26,7 +26,6 @@ A full-stack job board application where **job seekers** find and apply for role
 
 #### For Job Seekers
 - **Job Board** — Browse published listings filtered by location, type, experience level
-- **AI Job Search** — Describe your skills and goals in plain text; Gemini matches you to relevant listings
 - **Resume Upload** — Upload a PDF resume; Claude AI generates a structured summary automatically
 - **Mock Interview** — AI interviewer (Claude) conducts adaptive interviews based on your resume and target role, then gives a scored evaluation with improvement steps
 
