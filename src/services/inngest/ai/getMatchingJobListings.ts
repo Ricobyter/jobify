@@ -5,7 +5,7 @@ import {
   locationRequirements,
   wageIntervals,
 } from "@/drizzle/schema"
-import { createAgent, gemini } from "@inngest/agent-kit"
+import { createAgent, openai } from "@inngest/agent-kit"
 import { z } from "zod"
 import { getLastOutputMessage } from "./getLastOutputMessage"
 
@@ -50,9 +50,10 @@ export async function getMatchingJobListings(
           .parse(listing)
       )
     )}`,
-    model: gemini({
-      model: "gemini-2.0-flash",
-      apiKey: env.GEMINI_API_KEY,
+    model: openai({
+      model: "llama-3.3-70b-versatile",
+      apiKey: env.GROQ_API_KEY,
+      baseUrl: "https://api.groq.com/openai/v1/",
     }),
   })
 
