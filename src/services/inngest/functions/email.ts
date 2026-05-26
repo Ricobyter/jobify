@@ -3,10 +3,13 @@ import { groupBy } from "@/lib/groupBy"
 import { inngest } from "../client"
 import { and, eq, gte } from "drizzle-orm"
 import {
+  ConversationTable,
   JobListingApplicationTable,
   JobListingTable,
+  OrganizationTable,
   OrganizationUserSettingsTable,
   UserNotificationSettingsTable,
+  UserTable,
 } from "@/drizzle/schema"
 import { subDays } from "date-fns"
 import { GetEvents } from "inngest"
@@ -15,6 +18,7 @@ import { resend } from "@/services/resend/client"
 import DailyJobListingEmail from "@/services/resend/components/DailyJobListingEmail"
 import { env } from "@/data/env/server"
 import DailyApplicationEmail from "@/services/resend/components/DailyApplicationEmail"
+import InterestedNotificationEmail from "@/services/resend/components/InterestedNotificationEmail"
 
 export const prepareDailyUserJobListingNotifications = inngest.createFunction(
   {
@@ -287,6 +291,78 @@ export const sendDailyOrganizationUserApplicationEmail = inngest.createFunction(
         react: DailyApplicationEmail({
           applications,
           userName: user.name,
+        }),
+      })
+    })
+  }
+)
+
+export const sendInterestedNotificationEmail = inngest.createFunction(
+  {
+    id: "send-interested-notification-email",
+    name: "Send Interested Notification Email",
+  },
+  { event: "app/jobListingApplication.markedInterested" },
+  async ({ event, step }) => {
+    const { jobListingId, applicantUserId } = event.data
+
+    const [applicant, jobListing] = await step.run("fetch-data", async () => {
+      return Promise.all([
+        db.query.UserTable.findFirst({
+          where: eq(UserTable.id, applicantUserId),
+          columns: { name: true, email: true },
+        }),
+        db.query.JobListingTable.findFirst({
+          where: eq(JobListingTable.id, jobListingId),
+          columns: { title: true, organizationId: true },
+          with: { organization: { columns: { id: true, name: true } } },
+        }),
+      ])
+    })
+
+    if (!applicant || !jobListing) return
+
+    // Ensure a conversation exists so the link in the email goes somewhere
+    const conversation = await step.run(
+      "get-or-create-conversation",
+      async () => {
+        const [existing] = await db
+          .select()
+          .from(ConversationTable)
+          .where(
+            and(
+              eq(ConversationTable.jobListingId, jobListingId),
+              eq(ConversationTable.applicantId, applicantUserId)
+            )
+          )
+        if (existing) return existing
+
+        const [created] = await db
+          .insert(ConversationTable)
+          .values({
+            jobListingId,
+            organizationId: jobListing.organization.id,
+            applicantId: applicantUserId,
+          })
+          .returning()
+        return created
+      }
+    )
+
+    if (!conversation) return
+
+    await step.run("send-email", async () => {
+      const conversationUrl = `${env.SERVER_URL}/messages/${conversation.id}`
+
+      await resend.emails.send({
+        from: "Job Board <onboarding@resend.dev>",
+        to: applicant.email,
+        subject: `${jobListing.organization.name} is interested in you for ${jobListing.title}`,
+        react: InterestedNotificationEmail({
+          applicantName: applicant.name,
+          organizationName: jobListing.organization.name,
+          jobListingTitle: jobListing.title,
+          conversationUrl,
         }),
       })
     })

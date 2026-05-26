@@ -316,6 +316,7 @@ async function Applications({ jobListingId }: { jobListingId: string }) {
       canUpdateStage={await hasOrgUserPermission(
         "org:job_listing_applications:change_stage"
       )}
+      canChat
     />
   )
 }

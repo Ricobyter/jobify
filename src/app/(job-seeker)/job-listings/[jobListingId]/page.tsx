@@ -16,6 +16,7 @@ import { and, eq } from "drizzle-orm"
 import {
   JobListingApplicationTable,
   JobListingTable,
+  OrganizationUserSettingsTable,
 } from "@/drizzle/schema"
 import { getOrganizationIdTag } from "@/features/organizations/db/cache/organizations"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -159,7 +160,10 @@ async function JobListingDetails({
           <JobListingBadges jobListing={jobListing} />
         </div>
         <Suspense fallback={<Button disabled>Apply</Button>}>
-          <ApplyButton jobListingId={jobListing.id} />
+          <ApplyButton
+            jobListingId={jobListing.id}
+            organizationId={jobListing.organization.id}
+          />
         </Suspense>
       </div>
 
@@ -168,7 +172,13 @@ async function JobListingDetails({
   )
 }
 
-async function ApplyButton({ jobListingId }: { jobListingId: string }) {
+async function ApplyButton({
+  jobListingId,
+  organizationId,
+}: {
+  jobListingId: string
+  organizationId: string
+}) {
   const { userId } = await getCurrentUser()
   if (userId == null) {
     return (
@@ -181,6 +191,15 @@ async function ApplyButton({ jobListingId }: { jobListingId: string }) {
           <SignUpButton />
         </PopoverContent>
       </Popover>
+    )
+  }
+
+  const isMember = await getIsOrgMember({ userId, organizationId })
+  if (isMember) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        You&apos;re part of this company and cannot apply to your own listing.
+      </p>
     )
   }
 
@@ -293,4 +312,23 @@ async function getJobListing(id: string) {
   }
 
   return listing
+}
+
+async function getIsOrgMember({
+  userId,
+  organizationId,
+}: {
+  userId: string
+  organizationId: string
+}) {
+  const [row] = await db
+    .select({ userId: OrganizationUserSettingsTable.userId })
+    .from(OrganizationUserSettingsTable)
+    .where(
+      and(
+        eq(OrganizationUserSettingsTable.userId, userId),
+        eq(OrganizationUserSettingsTable.organizationId, organizationId)
+      )
+    )
+  return row != null
 }

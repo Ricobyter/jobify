@@ -23,6 +23,7 @@ import {
 import { inngest } from "@/services/inngest/client"
 import { hasOrgUserPermission } from "@/services/clerk/lib/orgUserPermissions"
 import { getUserResumeById } from "@/features/users/db/userResumes"
+import { OrganizationUserSettingsTable } from "@/drizzle/schema"
 
 export async function createJobListingApplication(
   jobListingId: string,
@@ -37,9 +38,13 @@ export async function createJobListingApplication(
 
   const [userResume, jobListing] = await Promise.all([
     getUserResume(userId, unsafeData.resumeId),
-    getPublicJobListing(jobListingId),
+    getPublicJobListingWithOrg(jobListingId),
   ])
   if (userResume == null || jobListing == null) return permissionError
+
+  // Block members of the org that owns this listing from applying
+  const isMember = await isOrgMember(userId, jobListing.organizationId)
+  if (isMember) return permissionError
 
   const { success, data } = newJobListingApplicationSchema.safeParse(unsafeData)
 
@@ -117,6 +122,13 @@ export async function updateJobListingApplicationStage(
     },
     { stage }
   )
+
+  if (stage === "interested") {
+    await inngest.send({
+      name: "app/jobListingApplication.markedInterested",
+      data: { jobListingId, applicantUserId: userId },
+    })
+  }
 }
 
 export async function updateJobListingApplicationRating(
@@ -174,7 +186,7 @@ export async function updateJobListingApplicationRating(
   )
 }
 
-async function getPublicJobListing(id: string) {
+async function getPublicJobListingWithOrg(id: string) {
   "use cache"
   cacheTag(getJobListingIdTag(id))
 
@@ -183,8 +195,21 @@ async function getPublicJobListing(id: string) {
       eq(JobListingTable.id, id),
       eq(JobListingTable.status, "published")
     ),
-    columns: { id: true },
+    columns: { id: true, organizationId: true },
   })
+}
+
+async function isOrgMember(userId: string, organizationId: string) {
+  const [row] = await db
+    .select({ userId: OrganizationUserSettingsTable.userId })
+    .from(OrganizationUserSettingsTable)
+    .where(
+      and(
+        eq(OrganizationUserSettingsTable.userId, userId),
+        eq(OrganizationUserSettingsTable.organizationId, organizationId)
+      )
+    )
+  return row != null
 }
 
 async function getJobListing(id: string) {

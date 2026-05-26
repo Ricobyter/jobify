@@ -29,6 +29,7 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   initialFilters?: ColumnFiltersState
+  initialSorting?: SortingState
   noResultsMessage?: ReactNode
   ToolbarComponent?: ComponentType<{ table: TableType<TData> }>
 }
@@ -37,10 +38,11 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   initialFilters,
+  initialSorting,
   noResultsMessage = "No results.",
   ToolbarComponent,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [sorting, setSorting] = useState<SortingState>(initialSorting ?? [])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
     initialFilters ?? []
   )

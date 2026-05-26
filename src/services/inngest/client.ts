@@ -36,6 +36,12 @@ type Events = {
       resumeId: string
     }
   }
+  "app/jobListingApplication.markedInterested": {
+    data: {
+      jobListingId: string
+      applicantUserId: string
+    }
+  }
   "dev/sync.user": {
     data: {
       userId: string

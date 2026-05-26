@@ -24,7 +24,7 @@ import { groupBy } from "@/lib/groupBy"
 import { getCurrentOrganization } from "@/services/clerk/lib/getCurrentAuth"
 import { hasOrgUserPermission } from "@/services/clerk/lib/orgUserPermissions"
 import { count, desc, eq } from "drizzle-orm"
-import { ClipboardListIcon, PlusIcon } from "lucide-react"
+import { ClipboardListIcon, MessageSquareIcon, PlusIcon } from "lucide-react"
 import { cacheTag } from "next/dist/server/use-cache/cache-tag"
 import Link from "next/link"
 import { redirect } from "next/navigation"
@@ -67,6 +67,11 @@ async function LayoutSuspense({ children }: { children: ReactNode }) {
           <SidebarNavMenuGroup
             className="mt-auto"
             items={[
+              {
+                href: "/employer/messages",
+                icon: <MessageSquareIcon />,
+                label: "Messages",
+              },
               { href: "/", icon: <ClipboardListIcon />, label: "Job Board" },
             ]}
           />

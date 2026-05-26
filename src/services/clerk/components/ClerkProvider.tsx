@@ -12,7 +12,7 @@ export function ClerkProvider({ children }: { children: ReactNode }) {
     <OriginalClerkProvider
       appearance={isDarkMode ? { baseTheme: [dark] } : undefined}
       signInFallbackRedirectUrl="/"
-      signUpFallbackRedirectUrl="/"
+      signUpForceRedirectUrl="/"
     >
       {children}
     </OriginalClerkProvider>

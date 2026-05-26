@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { ChevronDownIcon, MoreHorizontalIcon } from "lucide-react"
+import { ChevronDownIcon, MessageSquareIcon, MoreHorizontalIcon } from "lucide-react"
 import { toast } from "sonner"
 import {
   updateJobListingApplicationRating,
@@ -42,6 +42,7 @@ import {
 import Link from "next/link"
 import { LoadingSpinner } from "@/components/LoadingSpinner"
 import { DataTableFacetedFilter } from "@/components/dataTable/DataTableFacetedFilter"
+import { startEmployerChat } from "@/features/chat/actions/actions"
 
 type Application = Pick<
   typeof JobListingApplicationTable.$inferSelect,
@@ -60,7 +61,8 @@ type Application = Pick<
 
 function getColumns(
   canUpdateRating: boolean,
-  canUpdateStage: boolean
+  canUpdateStage: boolean,
+  canChat: boolean
 ): ColumnDef<Application>[] {
   return [
     {
@@ -146,6 +148,9 @@ function getColumns(
             resumeUrl={resume?.resumeFileUrl}
             resumeTitle={resume?.title}
             userName={jobListing.user.name}
+            applicantUserId={jobListing.user.id}
+            jobListingId={jobListing.jobListingId}
+            canChat={canChat}
           />
         )
       },
@@ -169,19 +174,21 @@ export function ApplicationTable({
   applications,
   canUpdateRating,
   canUpdateStage,
+  canChat = false,
   noResultsMessage = "No applications",
   disableToolbar = false,
 }: {
   applications: Application[]
   canUpdateRating: boolean
   canUpdateStage: boolean
+  canChat?: boolean
   noResultsMessage?: ReactNode
   disableToolbar?: boolean
 }) {
   return (
     <DataTable
       data={applications}
-      columns={getColumns(canUpdateRating, canUpdateStage)}
+      columns={getColumns(canUpdateRating, canUpdateStage, canChat)}
       noResultsMessage={noResultsMessage}
       ToolbarComponent={disableToolbar ? DisabledToolbar : Toolbar}
       initialFilters={[
@@ -190,6 +197,7 @@ export function ApplicationTable({
           value: applicationStages.filter(stage => stage !== "denied"),
         },
       ]}
+      initialSorting={[{ id: "rating", desc: true }]}
     />
   )
 }
@@ -366,12 +374,18 @@ function ActionCell({
   userName,
   resumeMarkdown,
   coverLetterMarkdown,
+  applicantUserId,
+  jobListingId,
+  canChat,
 }: {
   resumeUrl: string | null | undefined
   resumeTitle: string | null | undefined
   userName: string
   resumeMarkdown: ReactNode | null
   coverLetterMarkdown: ReactNode | null
+  applicantUserId: string
+  jobListingId: string
+  canChat: boolean
 }) {
   const [openModal, setOpenModal] = useState<"resume" | "coverLetter" | null>(
     null
@@ -387,6 +401,19 @@ function ActionCell({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          {canChat && (
+            <DropdownMenuItem asChild>
+              <form action={startEmployerChat.bind(null, jobListingId, applicantUserId)}>
+                <button
+                  type="submit"
+                  className="flex items-center gap-2 w-full"
+                >
+                  <MessageSquareIcon className="size-4" />
+                  Chat with Applicant
+                </button>
+              </form>
+            </DropdownMenuItem>
+          )}
           {resumeUrl != null || resumeMarkdown != null ? (
             <DropdownMenuItem onClick={() => setOpenModal("resume")}>
               View Selected Resume

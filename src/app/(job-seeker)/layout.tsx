@@ -6,6 +6,7 @@ import {
   ClipboardListIcon,
   LayoutDashboard,
   LogInIcon,
+  MessageSquareIcon,
   MicIcon,
 } from "lucide-react"
 import { ReactNode } from "react"
@@ -30,6 +31,12 @@ export default function JobSeekerLayout({
                 href: "/ai-search",
                 icon: <BrainCircuitIcon />,
                 label: "AI Search",
+              },
+              {
+                href: "/messages",
+                icon: <MessageSquareIcon />,
+                label: "Messages",
+                authStatus: "signedIn",
               },
               {
                 href: "/mock-interview",

@@ -7,5 +7,5 @@ const SignIn = dynamic(() => import("@clerk/nextjs").then(mod => mod.SignIn), {
 })
 
 export default function SignInPage() {
-  return <SignIn fallbackRedirectUrl="/" signUpFallbackRedirectUrl="/" />
+  return <SignIn fallbackRedirectUrl="/" signUpForceRedirectUrl="/" />
 }
