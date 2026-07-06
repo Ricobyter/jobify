@@ -113,7 +113,7 @@ export const createAiSummaryOfUploadedResume = inngest.createFunction(
 
             console.log('[Inngest] Calling GROQ chat model for resume summarization...')
             const completion = await groq.chat.completions.create({
-              model: "llama-3.3-70b-versatile",
+              model: "openai/gpt-oss-120b",
               max_tokens: 1500,
               messages: [
                 { role: 'system', content: 'You summarize resumes.' },
