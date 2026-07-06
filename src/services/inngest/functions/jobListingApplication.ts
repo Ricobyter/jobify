@@ -6,7 +6,7 @@ import {
   JobListingTable,
   UserResumeTable,
 } from "@/drizzle/schema"
-import { applicantRankingAgent } from "../ai/applicantRankingAgent"
+import { createApplicantRankingAgent } from "../ai/applicantRankingAgent"
 
 export const rankApplication = inngest.createFunction(
   { id: "rank-applicant", name: "Rank Applicant" },
@@ -64,14 +64,17 @@ export const rankApplication = inngest.createFunction(
     // Skip only when we have no applicant text at all.
     if (resumeSummary == null && coverLetter == null) return
 
+    const applicantRankingAgent = createApplicantRankingAgent({
+      jobListingId,
+      userId,
+    })
+
     await applicantRankingAgent.run(
       JSON.stringify({
         coverLetter,
         resumeSummary,
         isProvisional: resumeSummary == null,
         jobListing,
-        jobListingId,
-        userId,
       })
     )
   }
