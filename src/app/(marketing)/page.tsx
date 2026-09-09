@@ -137,10 +137,15 @@ export default function LandingPage() {
 
 function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60 dark:bg-[#0B0B0B]/80 dark:supports-backdrop-filter:bg-[#0B0B0B]/60 dark:border-[#242424]">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Image src={jobifyLogo} alt="Jobify" className="size-8 rounded-lg" />
+          <Image
+            src={jobifyLogo}
+            alt="Jobify"
+            sizes="32px"
+            className="size-8 rounded-lg"
+          />
           <span className="text-lg">Jobify</span>
         </Link>
 
@@ -181,7 +186,7 @@ function SiteHeader() {
 
 function HeroSection() {
   return (
-    <section className="relative overflow-hidden border-b">
+    <section className="relative overflow-hidden border-b dark:border-[#242424]">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_10%,var(--color-featured)/12%,transparent_55%)]"
@@ -230,7 +235,7 @@ function HeroSection() {
           <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
             {["No spam", "Relevant matches", "Free to use"].map(item => (
               <span key={item} className="flex items-center gap-1.5">
-                <CheckIcon className="size-3.5 text-featured" />
+                <CheckIcon className="size-3.5 text-foreground" />
                 {item}
               </span>
             ))}
@@ -250,6 +255,7 @@ function HeroPreviewImage() {
         src={heroImg}
         alt="Jobify product preview showing AI-matched job listings on desktop and mobile"
         priority
+        sizes="(min-width: 768px) 50vw, 100vw"
         className="w-full rounded-xl"
       />
     </div>
@@ -258,7 +264,7 @@ function HeroPreviewImage() {
 
 function LogoStrip() {
   return (
-    <section className="border-b bg-muted/40">
+    <section className="border-b bg-muted/40 dark:border-[#242424] dark:bg-transparent">
       <div className="mx-auto max-w-6xl px-4 py-10">
         <p className="text-center text-xs font-medium tracking-wide text-muted-foreground uppercase">
           Trusted by job seekers and employers
@@ -267,7 +273,7 @@ function LogoStrip() {
           {trustedLogos.map(name => (
             <div
               key={name}
-              className="flex items-center justify-center text-lg font-semibold tracking-tight opacity-70 grayscale"
+              className="flex items-center justify-center text-lg font-semibold tracking-tight opacity-70"
             >
               {name}
             </div>
@@ -286,16 +292,19 @@ function FeaturesSection() {
           Everything you need to land the job
         </h2>
         <p className="mt-4 text-muted-foreground">
-          From discovery to offer, Jobify's AI tools work alongside you at every
+          From discovery to offer, Jobify&apos;s AI tools work alongside you at every
           step of the process.
         </p>
       </div>
 
       <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {features.map(({ icon: Icon, title, description }) => (
-          <Card key={title} className="border-border/60">
+          <Card
+            key={title}
+            className="border-border/60 dark:border-[#242424] dark:bg-[#131313]"
+          >
             <CardHeader>
-              <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-muted text-foreground">
+              <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-muted text-foreground dark:bg-[#1f1f1f]">
                 <Icon className="size-5" />
               </div>
               <CardTitle>{title}</CardTitle>
@@ -310,7 +319,10 @@ function FeaturesSection() {
 
 function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="border-t bg-muted/40">
+    <section
+      id="how-it-works"
+      className="border-t bg-muted/40 dark:border-[#242424] dark:bg-transparent"
+    >
       <div className="mx-auto max-w-6xl px-4 py-24">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
@@ -359,15 +371,15 @@ function EmployerSection() {
           </p>
           <ul className="mt-6 space-y-3 text-sm">
             <li className="flex items-center gap-2">
-              <CheckIcon className="size-4 text-featured" />
+              <CheckIcon className="size-4 text-foreground" />
               Automatic 1–5 star applicant ranking
             </li>
             <li className="flex items-center gap-2">
-              <CheckIcon className="size-4 text-featured" />
+              <CheckIcon className="size-4 text-foreground" />
               Real-time chat with candidates
             </li>
             <li className="flex items-center gap-2">
-              <CheckIcon className="size-4 text-featured" />
+              <CheckIcon className="size-4 text-foreground" />
               Featured listings for extra visibility
             </li>
           </ul>
@@ -382,6 +394,8 @@ function EmployerSection() {
         <Image
           src={candidateMatcherImg}
           alt="Jobify employer dashboard showing AI-ranked candidates with match scores and applicant profiles"
+          loading="lazy"
+          sizes="(min-width: 768px) 50vw, 100vw"
           className="w-full"
         />
       </div>
@@ -391,12 +405,14 @@ function EmployerSection() {
 
 function StatsSection() {
   return (
-    <section className="border-t bg-foreground text-background">
+    <section className="border-t bg-foreground text-background dark:border-[#242424] dark:bg-[#0B0B0B] dark:text-foreground">
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-4 py-14 text-center md:grid-cols-4">
         {stats.map(stat => (
           <div key={stat.label}>
             <p className="text-3xl font-semibold md:text-4xl">{stat.value}</p>
-            <p className="mt-1 text-sm text-background/60">{stat.label}</p>
+            <p className="mt-1 text-sm text-background/60 dark:text-muted-foreground">
+              {stat.label}
+            </p>
           </div>
         ))}
       </div>
@@ -406,35 +422,37 @@ function StatsSection() {
 
 function CtaSection() {
   return (
-    <section className="border-t">
+    <section className="border-t dark:border-[#242424] dark:bg-[#121212]">
       <div className="mx-auto max-w-4xl px-4 py-24 text-center">
-        <Badge variant="secondary" className="mb-6">
-          Your next opportunity is closer than you think
-        </Badge>
-        <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-          Ready to find what&apos;s next?
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-          Join Jobify today and let AI do the heavy lifting — from search to
-          interview prep.
-        </p>
-        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <SignedOut>
-            <SignUpButton>
-              <Button size="lg" className="gap-2">
-                Get started for free
-                <ArrowRightIcon className="size-4" />
+        <div className="dark:rounded-2xl dark:border dark:border-[#242424] dark:bg-[#131313] dark:px-8 dark:py-12">
+          <Badge variant="secondary" className="mb-6">
+            Your next opportunity is closer than you think
+          </Badge>
+          <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
+            Ready to find what&apos;s next?
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+            Join Jobify today and let AI do the heavy lifting — from search to
+            interview prep.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <SignedOut>
+              <SignUpButton>
+                <Button size="lg" className="gap-2">
+                  Get started for free
+                  <ArrowRightIcon className="size-4" />
+                </Button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <Button size="lg" className="gap-2" asChild>
+                <Link href="/job-listings">
+                  Browse jobs
+                  <ArrowRightIcon className="size-4" />
+                </Link>
               </Button>
-            </SignUpButton>
-          </SignedOut>
-          <SignedIn>
-            <Button size="lg" className="gap-2" asChild>
-              <Link href="/job-listings">
-                Browse jobs
-                <ArrowRightIcon className="size-4" />
-              </Link>
-            </Button>
-          </SignedIn>
+            </SignedIn>
+          </div>
         </div>
       </div>
     </section>
@@ -443,11 +461,16 @@ function CtaSection() {
 
 function SiteFooter() {
   return (
-    <footer className="border-t">
+    <footer className="border-t dark:border-[#242424]">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2 font-medium text-foreground">
-            <Image src={jobifyLogo} alt="Jobify" className="size-6 rounded-md" />
+            <Image
+              src={jobifyLogo}
+              alt="Jobify"
+              sizes="24px"
+              className="size-6 rounded-md"
+            />
             Jobify
           </div>
           <p className="mt-3 text-sm text-muted-foreground">
@@ -497,7 +520,7 @@ function SiteFooter() {
         </div>
       </div>
 
-      <div className="border-t">
+      <div className="border-t dark:border-[#242424]">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-6 text-sm text-muted-foreground sm:flex-row">
           <p>&copy; {new Date().getFullYear()} Jobify. All rights reserved.</p>
           <div className="flex gap-6">
