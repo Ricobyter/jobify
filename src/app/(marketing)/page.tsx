@@ -108,7 +108,6 @@ const footerLinks = {
     { label: "Features", href: "#features" },
     { label: "How it works", href: "#how-it-works" },
     { label: "For Employers", href: "#employers" },
-    { label: "Pricing", href: "/employer/pricing" },
   ],
   Resources: [
     { label: "Blog", href: "#" },
@@ -160,9 +159,6 @@ function SiteHeader() {
           <a href="#employers" className="transition-colors hover:text-foreground">
             For Employers
           </a>
-          <Link href="/employer/pricing" className="transition-colors hover:text-foreground">
-            Pricing
-          </Link>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -423,47 +419,43 @@ function StatsSection() {
 
 function CtaSection() {
   return (
-    <section className="border-t dark:border-[#242424] dark:bg-[#121212]">
-      <div className="mx-auto max-w-4xl px-4 py-24 text-center">
-        <div className="relative overflow-hidden dark:rounded-2xl dark:border dark:border-[#242424] dark:bg-[#131313] dark:px-8 dark:py-12">
-          <Image
-            src={nextStepsImg}
-            alt=""
-            aria-hidden
-            fill
-            sizes="(min-width: 768px) 900px, 100vw"
-            className="hidden object-cover dark:block"
-          />
-          <div className="relative z-10">
-            <Badge variant="secondary" className="mb-6">
-              Your next opportunity is closer than you think
-            </Badge>
-            <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-              Ready to find what&apos;s next?
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-              Join Jobify today and let AI do the heavy lifting — from search
-              to interview prep.
-            </p>
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <SignedOut>
-                <SignUpButton>
-                  <Button size="lg" className="gap-2">
-                    Get started for free
-                    <ArrowRightIcon className="size-4" />
-                  </Button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <Button size="lg" className="gap-2" asChild>
-                  <Link href="/job-listings">
-                    Browse jobs
-                    <ArrowRightIcon className="size-4" />
-                  </Link>
-                </Button>
-              </SignedIn>
-            </div>
-          </div>
+    <section className="relative overflow-hidden border-t dark:border-[#242424]">
+      <Image
+        src={nextStepsImg}
+        alt=""
+        aria-hidden
+        fill
+        sizes="100vw"
+        className="hidden object-cover dark:block"
+      />
+      <div className="relative z-10 mx-auto max-w-4xl px-4 py-24 text-center">
+        <Badge variant="secondary" className="mb-6">
+          Your next opportunity is closer than you think
+        </Badge>
+        <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
+          Ready to find what&apos;s next?
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+          Join Jobify today and let AI do the heavy lifting — from search to
+          interview prep.
+        </p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <SignedOut>
+            <SignUpButton>
+              <Button size="lg" className="gap-2">
+                Get started for free
+                <ArrowRightIcon className="size-4" />
+              </Button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <Button size="lg" className="gap-2" asChild>
+              <Link href="/job-listings">
+                Browse jobs
+                <ArrowRightIcon className="size-4" />
+              </Link>
+            </Button>
+          </SignedIn>
         </div>
       </div>
     </section>
