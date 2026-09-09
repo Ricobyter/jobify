@@ -1,8 +1,12 @@
 import Link from "next/link"
+import Image from "next/image"
+import heroImg from "@/assets/images/hero_img.png"
+import candidateMatcherImg from "@/assets/images/candidate_matcher_img.png"
+import jobifyLogo from "@/assets/images/jobify_logo.png"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -11,74 +15,107 @@ import { Badge } from "@/components/ui/badge"
 import { SignedIn, SignedOut } from "@/services/clerk/components/SignInStatus"
 import { SignUpButton } from "@/services/clerk/components/AuthButtons"
 import {
-  BrainCircuitIcon,
-  ClipboardListIcon,
+  CheckIcon,
   MessageSquareIcon,
   MicIcon,
-  SparklesIcon,
+  SearchIcon,
   StarIcon,
   FileTextIcon,
   LayoutDashboard,
   ArrowRightIcon,
-  BriefcaseIcon,
 } from "lucide-react"
+import { FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6"
 
 const features = [
   {
-    icon: BrainCircuitIcon,
+    icon: SearchIcon,
     title: "AI-Powered Job Search",
     description:
-      "Describe your goals in plain English and let AI match you with the roles that actually fit — no more scrolling endless filters.",
+      "Describe your goals in plain English and find roles that actually fit — no more endless filters.",
   },
   {
     icon: FileTextIcon,
     title: "Instant Resume Summaries",
     description:
-      "Upload your resume and get a clean, structured AI summary that helps employers see your strengths at a glance.",
+      "Upload your resume and get a clean, structured AI summary that highlights your strengths.",
   },
   {
     icon: MicIcon,
     title: "AI Mock Interviews",
     description:
-      "Practice with an adaptive AI interviewer tailored to your resume and target role, then get a scored evaluation with a clear improvement plan.",
+      "Practice with an adaptive AI interviewer tailored to your role and get actionable feedback.",
   },
   {
     icon: MessageSquareIcon,
     title: "Real-Time Messaging",
     description:
-      "Chat directly with employers or applicants the moment there's a match — no email back-and-forth required.",
+      "Chat directly with employers or applicants — no email back-and-forth.",
   },
   {
     icon: StarIcon,
     title: "AI Applicant Ranking",
     description:
-      "Employers get every applicant automatically rated against the job so the strongest fits rise to the top.",
+      "Employers get automatically ranked applicants so the strongest fits rise to the top.",
   },
   {
     icon: LayoutDashboard,
     title: "Employer Dashboard",
     description:
-      "Post, edit, and manage listings with rich Markdown descriptions, plus full visibility into every applicant.",
+      "Post, manage, and track listings with rich descriptions and full visibility into every applicant.",
   },
 ]
 
 const steps = [
   {
-    step: "01",
+    step: "1",
     title: "Create your profile",
-    description: "Sign up and upload your resume — AI turns it into a polished summary in seconds.",
+    description:
+      "Sign up and upload your resume — AI turns it into a polished summary in seconds.",
   },
   {
-    step: "02",
+    step: "2",
     title: "Find the right role",
-    description: "Search by keyword or describe what you want and let AI surface the best matches.",
+    description:
+      "Search by keyword or describe what you want and let AI surface the best matches.",
   },
   {
-    step: "03",
+    step: "3",
     title: "Apply, chat, and interview",
-    description: "Message employers in real time and sharpen your pitch with an AI mock interview.",
+    description:
+      "Message employers in real time and sharpen your pitch with an AI mock interview.",
   },
 ]
+
+const trustedLogos = [
+  "Google",
+  "Microsoft",
+  "airbnb",
+  "amazon",
+  "Meta",
+  "Spotify",
+]
+
+const stats = [
+  { value: "50K+", label: "Active job seekers" },
+  { value: "1K+", label: "Hiring companies" },
+  { value: "100K+", label: "Jobs matched" },
+  { value: "4.8/5", label: "User satisfaction" },
+]
+
+const footerLinks = {
+  Product: [
+    { label: "Features", href: "#features" },
+    { label: "How it works", href: "#how-it-works" },
+    { label: "For Employers", href: "#employers" },
+    { label: "Pricing", href: "/employer/pricing" },
+  ],
+  Resources: [
+    { label: "Blog", href: "#" },
+    { label: "Career tips", href: "#" },
+    { label: "Help center", href: "#" },
+    { label: "Contact", href: "#" },
+  ],
+}
 
 export default function LandingPage() {
   return (
@@ -90,6 +127,7 @@ export default function LandingPage() {
         <FeaturesSection />
         <HowItWorksSection />
         <EmployerSection />
+        <StatsSection />
         <CtaSection />
       </main>
       <SiteFooter />
@@ -102,9 +140,7 @@ function SiteHeader() {
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <BriefcaseIcon className="size-4" />
-          </div>
+          <Image src={jobifyLogo} alt="Jobify" className="size-8 rounded-lg" />
           <span className="text-lg">Jobify</span>
         </Link>
 
@@ -118,6 +154,9 @@ function SiteHeader() {
           <a href="#employers" className="transition-colors hover:text-foreground">
             For Employers
           </a>
+          <Link href="/employer/pricing" className="transition-colors hover:text-foreground">
+            Pricing
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -142,74 +181,98 @@ function SiteHeader() {
 
 function HeroSection() {
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-hidden border-b">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,var(--color-featured)/12%,transparent_60%)]"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_10%,var(--color-featured)/12%,transparent_55%)]"
       />
-      <div className="mx-auto flex max-w-4xl flex-col items-center px-4 py-24 text-center md:py-32">
-        <Badge variant="secondary" className="mb-6 gap-1.5">
-          <SparklesIcon className="size-3.5 text-featured" />
-          AI-powered job matching
-        </Badge>
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 md:grid-cols-2 md:py-28">
+        <div>
+          <Badge variant="secondary" className="mb-6 gap-1.5">
+            <SearchIcon className="size-3.5 text-featured" />
+            AI-powered job matching
+          </Badge>
 
-        <h1 className="text-balance text-4xl font-semibold tracking-tight md:text-6xl">
-          Find your next role, faster —{" "}
-          <span className="text-featured">with AI on your side</span>
-        </h1>
+          <h1 className="text-balance text-4xl font-semibold tracking-tight md:text-5xl">
+            Find your next opportunity, faster.
+          </h1>
 
-        <p className="mt-6 max-w-2xl text-balance text-lg text-muted-foreground md:text-xl">
-          Jobify matches job seekers to the right roles with AI search, sharpens
-          your pitch with mock interviews, and helps employers find the best
-          candidates automatically.
-        </p>
+          <p className="mt-6 max-w-md text-balance text-lg text-muted-foreground">
+            Jobify helps you discover the right roles, prepare with AI tools,
+            and connect directly with top employers — without the noise.
+          </p>
 
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-          <SignedOut>
-            <SignUpButton>
-              <Button size="lg" className="gap-2">
-                Get started for free
-                <ArrowRightIcon className="size-4" />
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <SignedOut>
+              <SignUpButton>
+                <Button size="lg" className="gap-2">
+                  Get started for free
+                  <ArrowRightIcon className="size-4" />
+                </Button>
+              </SignUpButton>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/job-listings">Browse jobs</Link>
               </Button>
-            </SignUpButton>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/job-listings">Browse jobs</Link>
-            </Button>
-          </SignedOut>
-          <SignedIn>
-            <Button size="lg" className="gap-2" asChild>
-              <Link href="/ai-search">
-                Try AI Search
-                <ArrowRightIcon className="size-4" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/job-listings">Browse jobs</Link>
-            </Button>
-          </SignedIn>
+            </SignedOut>
+            <SignedIn>
+              <Button size="lg" className="gap-2" asChild>
+                <Link href="/ai-search">
+                  Try AI Search
+                  <ArrowRightIcon className="size-4" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/job-listings">Browse jobs</Link>
+              </Button>
+            </SignedIn>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            {["No spam", "Relevant matches", "Free to use"].map(item => (
+              <span key={item} className="flex items-center gap-1.5">
+                <CheckIcon className="size-3.5 text-featured" />
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
+
+        <HeroPreviewImage />
       </div>
     </section>
   )
 }
 
-function LogoStrip() {
-  const items = [
-    { icon: ClipboardListIcon, label: "Curated listings" },
-    { icon: BrainCircuitIcon, label: "AI matching" },
-    { icon: MicIcon, label: "Mock interviews" },
-    { icon: MessageSquareIcon, label: "Real-time chat" },
-    { icon: StarIcon, label: "AI ranking" },
-  ]
+function HeroPreviewImage() {
   return (
-    <section className="border-y bg-muted/40">
-      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 py-8 text-muted-foreground sm:grid-cols-5">
-        {items.map(({ icon: Icon, label }) => (
-          <div key={label} className="flex items-center justify-center gap-2 text-sm">
-            <Icon className="size-4" />
-            <span>{label}</span>
-          </div>
-        ))}
+    <div className="relative">
+      <Image
+        src={heroImg}
+        alt="Jobify product preview showing AI-matched job listings on desktop and mobile"
+        priority
+        className="w-full rounded-xl"
+      />
+    </div>
+  )
+}
+
+function LogoStrip() {
+  return (
+    <section className="border-b bg-muted/40">
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <p className="text-center text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          Trusted by job seekers and employers
+        </p>
+        <div className="mt-6 grid grid-cols-2 items-center gap-6 text-muted-foreground sm:grid-cols-3 md:grid-cols-6">
+          {trustedLogos.map(name => (
+            <div
+              key={name}
+              className="flex items-center justify-center text-lg font-semibold tracking-tight opacity-70 grayscale"
+            >
+              {name}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -232,7 +295,7 @@ function FeaturesSection() {
         {features.map(({ icon: Icon, title, description }) => (
           <Card key={title} className="border-border/60">
             <CardHeader>
-              <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-featured/10 text-featured">
+              <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-muted text-foreground">
                 <Icon className="size-5" />
               </div>
               <CardTitle>{title}</CardTitle>
@@ -259,11 +322,16 @@ function HowItWorksSection() {
         </div>
 
         <div className="mt-14 grid gap-8 md:grid-cols-3">
-          {steps.map(({ step, title, description }) => (
-            <div key={step} className="relative">
-              <span className="text-5xl font-semibold text-featured/30">
-                {step}
-              </span>
+          {steps.map(({ step, title, description }, i) => (
+            <div key={step} className="relative flex flex-col items-start">
+              <div className="flex w-full items-center">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-foreground text-sm font-semibold text-background">
+                  {step}
+                </span>
+                {i < steps.length - 1 && (
+                  <ArrowRightIcon className="mx-3 hidden size-4 shrink-0 text-muted-foreground/40 md:block" />
+                )}
+              </div>
               <h3 className="mt-4 text-lg font-medium">{title}</h3>
               <p className="mt-2 text-muted-foreground">{description}</p>
             </div>
@@ -286,22 +354,20 @@ function EmployerSection() {
             Hire faster with AI-ranked applicants
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Post a listing in minutes with rich Markdown descriptions. Every
-            applicant is automatically rated against your job so you can focus
-            on the strongest fits first, then message candidates directly the
-            moment they apply.
+            Post a job in minutes and get high-quality, AI-ranked applicants.
+            Focus on the best candidates while we handle the rest.
           </p>
           <ul className="mt-6 space-y-3 text-sm">
             <li className="flex items-center gap-2">
-              <StarIcon className="size-4 text-featured" />
+              <CheckIcon className="size-4 text-featured" />
               Automatic 1–5 star applicant ranking
             </li>
             <li className="flex items-center gap-2">
-              <MessageSquareIcon className="size-4 text-featured" />
-              Real-time chat with applicants
+              <CheckIcon className="size-4 text-featured" />
+              Real-time chat with candidates
             </li>
             <li className="flex items-center gap-2">
-              <ClipboardListIcon className="size-4 text-featured" />
+              <CheckIcon className="size-4 text-featured" />
               Featured listings for extra visibility
             </li>
           </ul>
@@ -313,37 +379,26 @@ function EmployerSection() {
           </Button>
         </div>
 
-        <Card className="border-border/60">
-          <CardContent className="space-y-4">
-            {[
-              { name: "Senior Frontend Engineer", rating: 5 },
-              { name: "Product Designer", rating: 4 },
-              { name: "Backend Engineer", rating: 4 },
-            ].map((applicant) => (
-              <div
-                key={applicant.name}
-                className="flex items-center justify-between rounded-lg border p-4"
-              >
-                <div>
-                  <p className="text-sm font-medium">{applicant.name}</p>
-                  <p className="text-xs text-muted-foreground">AI-matched applicant</p>
-                </div>
-                <div className="flex items-center gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <StarIcon
-                      key={i}
-                      className={
-                        i < applicant.rating
-                          ? "size-4 fill-featured text-featured"
-                          : "size-4 text-muted-foreground/30"
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <Image
+          src={candidateMatcherImg}
+          alt="Jobify employer dashboard showing AI-ranked candidates with match scores and applicant profiles"
+          className="w-full"
+        />
+      </div>
+    </section>
+  )
+}
+
+function StatsSection() {
+  return (
+    <section className="border-t bg-foreground text-background">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-4 py-14 text-center md:grid-cols-4">
+        {stats.map(stat => (
+          <div key={stat.label}>
+            <p className="text-3xl font-semibold md:text-4xl">{stat.value}</p>
+            <p className="mt-1 text-sm text-background/60">{stat.label}</p>
+          </div>
+        ))}
       </div>
     </section>
   )
@@ -353,8 +408,11 @@ function CtaSection() {
   return (
     <section className="border-t">
       <div className="mx-auto max-w-4xl px-4 py-24 text-center">
+        <Badge variant="secondary" className="mb-6">
+          Your next opportunity is closer than you think
+        </Badge>
         <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-          Ready to find what's next?
+          Ready to find what&apos;s next?
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
           Join Jobify today and let AI do the heavy lifting — from search to
@@ -386,14 +444,74 @@ function CtaSection() {
 function SiteFooter() {
   return (
     <footer className="border-t">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-10 text-sm text-muted-foreground sm:flex-row">
-        <div className="flex items-center gap-2 font-medium text-foreground">
-          <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <BriefcaseIcon className="size-3.5" />
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 md:grid-cols-4">
+        <div>
+          <div className="flex items-center gap-2 font-medium text-foreground">
+            <Image src={jobifyLogo} alt="Jobify" className="size-6 rounded-md" />
+            Jobify
           </div>
-          Jobify
+          <p className="mt-3 text-sm text-muted-foreground">
+            Smarter job search. Brighter careers.
+            <br />
+            Built with AI.
+          </p>
+          <div className="mt-4 flex gap-4 text-muted-foreground">
+            <Link href="#" aria-label="LinkedIn" className="transition-colors hover:text-foreground">
+              <FaLinkedin className="size-4" />
+            </Link>
+            <Link href="#" aria-label="X (Twitter)" className="transition-colors hover:text-foreground">
+              <FaXTwitter className="size-4" />
+            </Link>
+            <Link href="#" aria-label="GitHub" className="transition-colors hover:text-foreground">
+              <FaGithub className="size-4" />
+            </Link>
+          </div>
         </div>
-        <p>&copy; {new Date().getFullYear()} Jobify. All rights reserved.</p>
+
+        {Object.entries(footerLinks).map(([heading, links]) => (
+          <div key={heading}>
+            <p className="text-sm font-medium">{heading}</p>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              {links.map(link => (
+                <li key={link.label}>
+                  <Link href={link.href} className="transition-colors hover:text-foreground">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+
+        <div>
+          <p className="text-sm font-medium">Stay updated</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Get the latest updates and career insights.
+          </p>
+          <form className="mt-3 flex gap-2">
+            <Input type="email" placeholder="Enter your email" className="h-9" />
+            <Button size="icon" type="submit" aria-label="Subscribe">
+              <ArrowRightIcon className="size-4" />
+            </Button>
+          </form>
+        </div>
+      </div>
+
+      <div className="border-t">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-6 text-sm text-muted-foreground sm:flex-row">
+          <p>&copy; {new Date().getFullYear()} Jobify. All rights reserved.</p>
+          <div className="flex gap-6">
+            <Link href="#" className="transition-colors hover:text-foreground">
+              Privacy
+            </Link>
+            <Link href="#" className="transition-colors hover:text-foreground">
+              Terms
+            </Link>
+            <Link href="#" className="transition-colors hover:text-foreground">
+              Cookies
+            </Link>
+          </div>
+        </div>
       </div>
     </footer>
   )
