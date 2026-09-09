@@ -1,4 +1,5 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import { LoadingSpinner } from "@/components/LoadingSpinner"
 import {
   Card,
   CardContent,
@@ -50,7 +51,7 @@ const searchParamsSchema = z.object({
 
 export function JobListingItems(props: Props) {
   return (
-    <Suspense>
+    <Suspense fallback={<LoadingSpinner />}>
       <SuspendedComponent {...props} />
     </Suspense>
   )

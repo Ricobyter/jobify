@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode, useEffect, useState } from "react"
+import { ReactNode, useSyncExternalStore } from "react"
 
 export function IsBreakpoint({
   breakpoint,
@@ -16,24 +16,13 @@ export function IsBreakpoint({
 }
 
 function useIsBreakpoint(breakpoint: string) {
-  const [isBreakpoint, setIsBreakpoint] = useState(false)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    const media = window.matchMedia(`(${breakpoint})`)
-    media.addEventListener(
-      "change",
-      e => {
-        setIsBreakpoint(e.matches)
-      },
-      { signal: controller.signal }
-    )
-    setIsBreakpoint(media.matches)
-
-    return () => {
-      controller.abort()
-    }
-  }, [breakpoint])
-
-  return isBreakpoint
+  return useSyncExternalStore(
+    onStoreChange => {
+      const media = window.matchMedia(`(${breakpoint})`)
+      media.addEventListener("change", onStoreChange)
+      return () => media.removeEventListener("change", onStoreChange)
+    },
+    () => window.matchMedia(`(${breakpoint})`).matches,
+    () => false
+  )
 }

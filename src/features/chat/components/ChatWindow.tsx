@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { env } from "@/data/env/client"
 import { sendMessage } from "@/features/chat/actions/actions"
 import { format } from "date-fns"
 import { SendIcon } from "lucide-react"
@@ -50,7 +51,7 @@ export function ChatWindow({
 
   // Socket.io setup
   useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || ""
+    const socketUrl = env.NEXT_PUBLIC_SOCKET_URL ?? ""
     const socket = io(socketUrl, { path: "/api/socketio", addTrailingSlash: false })
     socketRef.current = socket
 

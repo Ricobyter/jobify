@@ -1,5 +1,6 @@
 import { ActionButton } from "@/components/ActionButton"
 import { AsyncIf } from "@/components/AsyncIf"
+import { LoadingSpinner } from "@/components/LoadingSpinner"
 import { MarkdownPartial } from "@/components/markdown/MarkdownPartial"
 import { MarkdownRenderer } from "@/components/markdown/MarkdownRenderer"
 import { Badge } from "@/components/ui/badge"
@@ -58,7 +59,7 @@ type Props = {
 
 export default function JobListingPage(props: Props) {
   return (
-    <Suspense>
+    <Suspense fallback={<LoadingSpinner />}>
       <SuspendedPage {...props} />
     </Suspense>
   )
