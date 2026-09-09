@@ -1,4 +1,4 @@
-import { JobListingItems } from "./_shared/JobListingItems"
+import { JobListingItems } from "../_shared/JobListingItems"
 
 export default function HomePage({
   searchParams,

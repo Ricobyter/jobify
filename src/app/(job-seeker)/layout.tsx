@@ -26,7 +26,11 @@ export default function JobSeekerLayout({
           <SidebarNavMenuGroup
             className="mt-auto"
             items={[
-              { href: "/", icon: <ClipboardListIcon />, label: "Job Board" },
+              {
+                href: "/job-listings",
+                icon: <ClipboardListIcon />,
+                label: "Job Board",
+              },
               {
                 href: "/ai-search",
                 icon: <BrainCircuitIcon />,

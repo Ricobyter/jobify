@@ -72,7 +72,11 @@ async function LayoutSuspense({ children }: { children: ReactNode }) {
                 icon: <MessageSquareIcon />,
                 label: "Messages",
               },
-              { href: "/", icon: <ClipboardListIcon />, label: "Job Board" },
+              {
+                href: "/job-listings",
+                icon: <ClipboardListIcon />,
+                label: "Job Board",
+              },
             ]}
           />
         </>
