@@ -12,6 +12,7 @@ import { createdAt, id, updatedAt } from "../schemaHelpers"
 import { OrganizationTable } from "./organization"
 import { relations } from "drizzle-orm"
 import { JobListingApplicationTable } from "./jobListingApplication"
+import { SavedJobListingTable } from "./savedJobListing"
 
 export const wageIntervals = ["hourly", "yearly"] as const
 export type WageInterval = (typeof wageIntervals)[number]
@@ -78,5 +79,6 @@ export const jobListingReferences = relations(
       references: [OrganizationTable.id],
     }),
     applications: many(JobListingApplicationTable),
+    savedByUsers: many(SavedJobListingTable),
   })
 )

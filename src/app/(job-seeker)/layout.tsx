@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/sidebar/AppSidebar"
 import { SidebarNavMenuGroup } from "@/components/sidebar/SidebarNavMenuGroup"
 import { SidebarUserButton } from "@/features/users/components/SidebarUserButton"
 import {
+  BookmarkIcon,
   BrainCircuitIcon,
   ClipboardListIcon,
   LayoutDashboard,
@@ -35,6 +36,12 @@ export default function JobSeekerLayout({
                 href: "/ai-search",
                 icon: <BrainCircuitIcon />,
                 label: "AI Search",
+              },
+              {
+                href: "/job-listings?saved=true",
+                icon: <BookmarkIcon />,
+                label: "Saved Jobs",
+                authStatus: "signedIn",
               },
               {
                 href: "/messages",
